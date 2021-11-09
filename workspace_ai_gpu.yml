@@ -63,9 +63,7 @@ components:
       spec:
         containers:
           - name: python
-            image: registry.hub.docker.com/tensorflow/tensorflow:latest-gpu
-            command: ["/bin/sh"]
-            args: ["-c", "while true; do echo hello; sleep 10;done"]
+            image: mhahn-gpu-test
             resources:
               limits:
                 memory: 4Gi
