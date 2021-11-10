@@ -36,5 +36,5 @@ commands:
     actions:
       - type: exec
         component: python
-        command: 'python3 demos/01_license_plate/test_ai_model.py'
+        command: '. /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py'
         workdir: '${CHE_PROJECTS_ROOT}/demo_crw_ai_repo'

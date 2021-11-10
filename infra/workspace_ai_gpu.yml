@@ -40,3 +40,16 @@ components:
     type: chePlugin
   - id: redhat/vscode-xml/latest
     type: chePlugin
+commands:
+  - name: 01_license_plate__Run server
+    actions:
+      - type: exec
+        component: python
+        command: '/bin/bash demos/01_license_plate/run_server.sh'
+        workdir: '${CHE_PROJECTS_ROOT}/demo_crw_ai_repo'
+  - name: 01_license_plate__Test AI model
+    actions:
+      - type: exec
+        component: python
+        command: '. /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py'
+        workdir: '${CHE_PROJECTS_ROOT}/demo_crw_ai_repo'
