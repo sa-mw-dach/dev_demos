@@ -63,7 +63,7 @@ components:
       spec:
         containers:
           - name: python
-            image: mhahn-gpu-test
+            image: quay.io/manhah/ubi8-python3-cuda@sha256:7a72ce783f07
             resources:
               limits:
                 memory: 4Gi
