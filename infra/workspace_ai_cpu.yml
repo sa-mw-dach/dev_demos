@@ -1,6 +1,6 @@
 apiVersion: 1.0.0
 metadata:
-  generateName: crw_ai_
+  generateName: crw_ai_cpu_
 projects:
   - name: demo_crw_ai_repo
     source:
