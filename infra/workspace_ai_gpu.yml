@@ -1,0 +1,42 @@
+apiVersion: 1.0.0
+metadata:
+  generateName: crw_ai_gpu_
+projects:
+  - name: demo_crw_ai_repo
+    source:
+      type: git
+      location: 'https://github.com/sa-mw-dach/demo_crw_ai.git'
+      branch: feature/first_running_version
+components:
+  - type: cheEditor
+    alias: theia-editor
+    id: eclipse/che-theia/latest
+    memoryLimit: 1Gi
+  - type: chePlugin
+    id: ms-python/python/latest
+    preferences:
+      python.globalModuleInstallation: true
+  - mountSources: true
+    referenceContent: |
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: python
+      spec:
+        containers:
+          - name: python
+            image: quay.io/manhah/ubi8-python3-cuda@sha256:7a72ce783f07887058e27bdb25ee388c34d1629d1312605e1f66068b8da5877c
+            resources:
+              limits:
+                memory: 4Gi
+                nvidia.com/gpu: 1 # limiting to 1 GPU
+              requests:
+                nvidia.com/gpu: 1 # requesting 1 GPU
+        nodeSelector:
+          nvidia.com/gpu.present: true
+    type: kubernetes
+    alias: python
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+  - id: redhat/vscode-xml/latest
+    type: chePlugin
