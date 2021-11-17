@@ -1,8 +1,9 @@
-# Disable INFO log level (1: INFO messages are not printed)
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
+# Uncomment the following 3 lines to get rid of the INFO-level log messages
+# # Disable INFO log level (1: INFO messages are not printed)
+# import os
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
 
-# Import Tensorflow and enable logging
+# Import Tensorflow and enable logging 
 import tensorflow as tf
 tf.debugging.set_log_device_placement(True)
 
