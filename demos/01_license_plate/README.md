@@ -22,7 +22,7 @@ In order to be able to create the CodeReady Workspace and run the sample AI work
 **Starting the webserver hosting the AI workload**
 1) Go to the menu bar and select "Terminal" and "Run Task". Then click on "01_license_plate__Run server" at the top of the page. A command window is opening at the bottom of the page, where you can see the webserver for the AI workload being started. The first time you execute this task inside the workspace, the prerequistes are installed via Python's PyPi, which may take some minutes.
 1) After the AI webserver has been started successfully, a new window tells you that a new process is listening on port 5000, which is the desired AI webserver listener. You are asked if you want to create a redirect for this port, which you answer with "yes".
-1) Subsequently a new window pops up telling you that the redirect is enabled now and provides the URL to the webserver, which you can open by clicking "Open In New Tab". The new browser window should simply show the JSON string `{ "status": "ok"}`, which means that the webserver and the AI workload are working properly.
+1) Subsequently a new window pops up telling you that the redirect is enabled now and provides the URL to the webserver, which you can open by clicking "Open In New Tab". The new browser window should simply show the JSON string `{ "status": "ok"}`, which means that the webserver and the AI workload are working properly. Please note that it may take some seconds until the redirect is working properly.
 
 **Testing the AI model**
 
