@@ -35,7 +35,7 @@ components:
         nodeSelector:
           nvidia.com/gpu.present: true
     type: kubernetes
-    alias: python
+    alias: python/python
   - id: redhat/vscode-yaml/latest
     type: chePlugin
   - id: redhat/vscode-xml/latest
@@ -44,18 +44,18 @@ commands:
   - name: 01_license_plate__1 Run server
     actions:
       - type: exec
-        component: python
+        component: python/python
         command: '/bin/bash demos/01_license_plate/run_server.sh'
         workdir: '${CHE_PROJECTS_ROOT}/demo_crw_ai_repo'
   - name: 01_license_plate__2 Test AI model
     actions:
       - type: exec
-        component: python
+        component: python/python
         command: '. /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py'
         workdir: '${CHE_PROJECTS_ROOT}/demo_crw_ai_repo'
   - name: 01_license_plate__3 Test GPU computation
     actions:
       - type: exec
-        component: python
+        component: python/python
         command: '. /tmp/.venv/bin/activate && python demos/01_license_plate/test_gpu.py'
         workdir: '${CHE_PROJECTS_ROOT}/demo_crw_ai_repo'
