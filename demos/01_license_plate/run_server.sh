@@ -1,4 +1,4 @@
-cd /projects/demo_crw_ai_repo/
+cd /projects/dev_demos/
 python3 -m venv /tmp/.venv && . /tmp/.venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r external/licence-plate-workshop/requirements.txt
