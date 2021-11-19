@@ -15,6 +15,11 @@ from keras.preprocessing.image import load_img, img_to_array
 from keras.applications.mobilenet_v2 import preprocess_input
 from sklearn.preprocessing import LabelEncoder
 
+# Temporarily added to avoid memory error
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+session = tf.compat.v1.Session(config=config)
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
