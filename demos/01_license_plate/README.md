@@ -50,6 +50,13 @@ git subtree add --prefix external/licence-plate-workshop https://github.com/rh-a
 ```
 Starting from the original code's commit id 4ebb74326cdd70eedf861225f6604fef0d0e3194 changes regarding the PyPi packages in file `external/licence-plate-workshop/requirements.txt` have been done to fit to the environment at hand.
 
+## Note regarding secure endpoints
+Please note that when creating endpoints on the fly using the IDE, i.e. a new window asking if you would like to create an endpoint for a new process listening on port 5000 (after having started the webserver as described above), then this endpoint is created by default with options public and not secure, meaning that everyone can access this endpoint if the exact URL is known (and access to the OpenShift cluster is available, of course). To create public endpoints which are protected, you can simply add an "endpoints" section to your component in the devfile with a `secure: 'true'` option as can be seen in the [CPU-based devfile](../../infra/workspace_ai_cpu.yml). After the workspace has been started (and the webserver is running) you can access the respective route by providing your workspace's JWT token, which can be found in the YAML representation of your workspace pod under "CHE_MACHINE_TOKEN". Using curl for example, calling the route is done by
+```
+curl -H "Authorization: bearer MY_JWT_TOKEN" https://routeXYZ-codeready.apps.MY_URL/
+```
+
+
 [^license_plate_desc]: https://rh-aiservices-bu.github.io/licence-plate-workshop/
 [^license_plate_repo]: https://github.com/rh-aiservices-bu/licence-plate-workshop.git
 [^demo_repo]: https://github.com/sa-mw-dach/dev_demos.git
