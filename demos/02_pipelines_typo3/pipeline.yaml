@@ -19,6 +19,9 @@ spec:
   - name: IMAGE
     type: string
     description: image to be build from the code
+  - name: manifest_dir
+    description: The directory in source that contains yaml manifests
+    type: string
   tasks:
   - name: fetch-repository
     taskRef:
@@ -50,14 +53,19 @@ spec:
   #     workspace: shared-workspace
   #   runAfter:
   #   - fetch-repository
-  # - name: apply-manifests
-  #   taskRef:
-  #     name: apply-manifests
-  #   workspaces:
-  #   - name: source
-  #     workspace: shared-workspace
-  #   runAfter:
-  #   - build-image
+  - name: apply-manifests
+    taskRef:
+      name: apply-manifests
+    params:
+    - name: manifest_dir
+      value: $(params.manifest_dir)
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    runAfter:
+    - fetch-repository
+    # - build-image
+
   # - name: update-deployment
   #   taskRef:
   #     name: update-deployment
