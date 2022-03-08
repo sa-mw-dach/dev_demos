@@ -19,7 +19,7 @@ spec:
           value: yourothersupersecretpassword
         - name: MYSQL_DATABASE
           value: typo3
-    - image: martinhelmich/typo3:11
+    - image: martinhelmich/typo3:10.4
       name: typo3-web
       imagePullPolicy: Always
       ports:
