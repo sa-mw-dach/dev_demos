@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: typo3-application
+  namespace: pipelines-demo
+  labels:
+    app: typo3-application
+    cms: typo3
+spec:
+  containers:
+    - image: mysql:5.7
+      name: typo3-db
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: yoursupersecretpassword
+        - name: MYSQL_USER
+          value: typo3
+        - name: MYSQL_PASSWORD
+          value: yourothersupersecretpassword
+        - name: MYSQL_DATABASE
+          value: typo3
+    - image: martinhelmich/typo3:11
+      name: typo3-web
+      imagePullPolicy: Always
+      ports:
+        - containerPort: 80
+      env:
+        - name: TYPO3_DB_HOST
+          value: 127.0.0.1
