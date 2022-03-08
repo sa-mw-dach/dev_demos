@@ -10,6 +10,7 @@ cd dev_demos/demos/02_pipelines_typo3/
 
 2) Add pipeline to OpenShift cluster:
 ```
+oc new-project pipelines-typo3
 oc apply -f pipeline.yaml
 ```
 

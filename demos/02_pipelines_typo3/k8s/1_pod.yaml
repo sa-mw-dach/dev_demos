@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: typo3-application
-  namespace: pipelines-demo
+  namespace: pipelines-typo3
   labels:
     app: typo3-application
     cms: typo3

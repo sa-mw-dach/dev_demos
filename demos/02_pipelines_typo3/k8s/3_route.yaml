@@ -2,7 +2,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: typo3-application
-  namespace: pipelines-demo
+  namespace: pipelines-typo3
   labels:
     app: typo3-application
 
