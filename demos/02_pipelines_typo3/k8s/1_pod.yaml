@@ -8,7 +8,7 @@ metadata:
     cms: typo3
 spec:
   containers:
-    - image: mysql:5.7
+    - image: mariadb:latest
       name: typo3-db
       env:
         - name: MYSQL_ROOT_PASSWORD
