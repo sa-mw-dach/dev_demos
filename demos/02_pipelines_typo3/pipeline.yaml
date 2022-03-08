@@ -1,14 +1,11 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: build-and-deploy
+  name: clone-and-run-manifest
 spec:
   workspaces:
   - name: shared-workspace
   params:
-  - name: deployment-name
-    type: string
-    description: name of the deployment to be patched
   - name: git-url
     type: string
     description: url of the git repo for the code of deployment
@@ -16,9 +13,6 @@ spec:
     type: string
     description: revision to be used from repo of the code for deployment
     default: "master"
-  - name: IMAGE
-    type: string
-    description: image to be build from the code
   - name: manifest_dir
     description: The directory in source that contains yaml manifests
     type: string
@@ -39,20 +33,6 @@ spec:
       value: "true"
     - name: revision
       value: $(params.git-revision)
-  # - name: build-image
-  #   taskRef:
-  #     name: buildah
-  #     kind: ClusterTask
-  #   params:
-  #   - name: TLSVERIFY
-  #     value: "false"
-  #   - name: IMAGE
-  #     value: $(params.IMAGE)
-  #   workspaces:
-  #   - name: source
-  #     workspace: shared-workspace
-  #   runAfter:
-  #   - fetch-repository
   - name: apply-manifests
     taskRef:
       name: apply-manifests
@@ -64,18 +44,3 @@ spec:
       workspace: shared-workspace
     runAfter:
     - fetch-repository
-    # - build-image
-
-  # - name: update-deployment
-  #   taskRef:
-  #     name: update-deployment
-  #   workspaces:
-  #   - name: source
-  #     workspace: shared-workspace
-  #   params:
-  #   - name: deployment
-  #     value: $(params.deployment-name)
-  #   - name: IMAGE
-  #     value: $(params.IMAGE)
-  #   runAfter:
-  #   - apply-manifests
