@@ -6,7 +6,7 @@ projects:
     source:
       type: git
       location: 'https://github.com/sa-mw-dach/dev_demos.git'
-      branch: hotfix/cpu_adapt
+      branch: main
 components:
   - type: cheEditor
     alias: theia-editor
