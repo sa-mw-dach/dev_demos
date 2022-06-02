@@ -6,4 +6,4 @@ COPY external/licence-plate-workshop/ .
 RUN pip install -r requirements.txt
 ENV FLASK_APP=wsgi.py 
 CMD ["flask", "run"]
-
+EXPOSE 5000/tcp
