@@ -1,0 +1,59 @@
+apiVersion: 1.0.0
+metadata:
+  name: crw_ai_cpu_dxkf
+projects:
+  - name: dev_demos
+    source:
+      location: 'https://github.com/sa-mw-dach/dev_demos.git'
+      type: git
+      branch: feature
+components:
+  - id: eclipse/che-theia/latest
+    memoryLimit: 1Gi
+    type: cheEditor
+    alias: theia-editor
+  - id: ms-python/python/latest
+    preferences:
+      python.globalModuleInstallation: true
+    type: chePlugin
+  - mountSources: true
+    endpoints:
+      - attributes:
+          protocol: https
+          public: 'true'
+          discoverable: 'false'
+          secure: 'true'
+        name: webserver
+        port: 5000
+    memoryLimit: 4Gi
+    type: dockerimage
+    alias: python
+    image: 'quay.io/eclipse/che-python-3.8:ce0526f'
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+  - id: redhat/vscode-xml/latest
+    type: chePlugin
+  - id: redhat/vscode-openshift-connector/latest
+    type: chePlugin
+  - type: chePlugin
+    reference: 'https://eclipse-che.github.io/che-plugin-registry/main/v3/plugins/redhat/vscode-tekton-pipelines/latest/'
+    alias: tekton-plugin
+commands:
+  - name: 01_license_plate__1 Run server
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/dev_demos'
+        type: exec
+        command: /bin/bash demos/01_license_plate/run_server.sh
+        component: python
+  - name: 01_license_plate__2 Test AI model
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/dev_demos'
+        type: exec
+        command: . /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py
+        component: python
+  - name: 01_license_plate__3 Test GPU computation
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/dev_demos'
+        type: exec
+        command: . /tmp/.venv/bin/activate && python demos/01_license_plate/test_gpu.py
+        component: python
