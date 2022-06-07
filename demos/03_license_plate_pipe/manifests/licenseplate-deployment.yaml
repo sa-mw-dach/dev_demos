@@ -19,7 +19,7 @@ spec:
       containers:
         - name: licenseplate
           image: >-
-            image-registry.openshift-image-registry.svc:5000/bschmeli-tmp/licenseplate:latest
+            image-registry.openshift-image-registry.svc:5000/pipelines-demo/licenseplate:latest
           ports:
             - containerPort: 5000
               protocol: TCP
