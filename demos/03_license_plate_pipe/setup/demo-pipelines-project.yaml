@@ -1,8 +1,0 @@
-kind: Project
-apiVersion: project.openshift.io/v1
-metadata:
-  annotations:
-  name: pipelines-demo
-spec:
-  finalizers:
-  - kubernetes
