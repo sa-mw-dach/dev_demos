@@ -1,0 +1,17 @@
+FROM docker.io/nvidia/cuda:11.3.0-cudnn8-devel-ubi8
+
+RUN dnf -y install python3 python3-pip
+RUN dnf -y install python3-devel
+RUN dnf -y install git
+
+RUN mkdir -p /opt/app-root/src 
+WORKDIR /opt/app-root/src
+
+RUN python3 -m venv /tmp/.venv
+RUN . /tmp/.venv/bin/activate && python -m pip install --upgrade pip
+
+RUN git clone -b demo https://github.com/sa-mw-dach/dev_demos.git
+RUN . /tmp/.venv/bin/activate && pip install -r dev_demos/external/licence-plate-workshop/requirements.txt
+RUN . /tmp/.venv/bin/activate && pip install requests
+
+ENTRYPOINT ["tail", "-f", "/dev/null"]

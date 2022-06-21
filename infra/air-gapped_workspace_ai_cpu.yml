@@ -1,0 +1,46 @@
+apiVersion: 1.0.0
+metadata:
+  generateName: crw_ai_cpu_
+components:
+  - type: cheEditor
+    alias: theia-editor
+    id: eclipse/che-theia/latest
+    memoryLimit: 1Gi
+  - type: chePlugin
+    id: ms-python/python/latest
+    preferences:
+      python.globalModuleInstallation: true
+  - type: dockerimage
+    alias: python
+    image: quay.io/manhah/air-gapped_license_plate_demo_cpu:latest
+    #image: host.compute.local:5000/kordel/air-gapped_license_plate_demo_cpu:latest
+    memoryLimit: 4Gi
+    mountSources: true
+    endpoints:
+      - name: webserver
+        port: 5000
+        attributes:
+          protocol: https
+          secure: 'true'
+          public: 'true'
+          discoverable: 'false'
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+  - id: redhat/vscode-xml/latest
+    type: chePlugin
+commands:
+  - name: 01_license_plate__1 Run server
+    actions:
+      - type: exec
+        component: python
+        command: '/bin/bash dev_demos/demos/01_license_plate/air-gapped_run_server.sh'
+  - name: 01_license_plate__2 Test AI model
+    actions:
+      - type: exec
+        component: python
+        command: '. /tmp/.venv/bin/activate && python dev_demos/demos/01_license_plate/test_ai_model.py'
+  - name: 01_license_plate__3 Test GPU computation
+    actions:
+      - type: exec
+        component: python
+        command: '. /tmp/.venv/bin/activate && python dev_demos/demos/01_license_plate/test_gpu.py'
