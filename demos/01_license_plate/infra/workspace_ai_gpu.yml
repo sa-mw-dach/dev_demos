@@ -25,7 +25,7 @@ components:
       spec:
         containers:
           - name: python
-            image: quay.io/manhah/license_plate_demo_gpu@latest
+            image: quay.io/manhah/license_plate_demo_gpu:latest
             resources:
               limits:
                 memory: 4Gi
