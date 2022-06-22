@@ -1,12 +1,6 @@
 apiVersion: 1.0.0
 metadata:
-  generateName: crw_ai_gpu_
-projects:
-  - name: dev_demos
-    source:
-      type: git
-      location: 'https://github.com/sa-mw-dach/dev_demos.git'
-      branch: main
+  generateName: crw_ai_gpu_ag_
 components:
   - type: cheEditor
     alias: theia-editor
@@ -25,7 +19,7 @@ components:
       spec:
         containers:
           - name: python
-            image: quay.io/manhah/ubi8-python3-cuda@sha256:7a72ce783f07887058e27bdb25ee388c34d1629d1312605e1f66068b8da5877c
+            image: quay.io/manhah/license_plate_demo_gpu_air-gapped:latest
             resources:
               limits:
                 memory: 4Gi
@@ -45,17 +39,14 @@ commands:
     actions:
       - type: exec
         component: python/python
-        command: '/bin/bash demos/01_license_plate/run_server.sh'
-        workdir: '${CHE_PROJECTS_ROOT}/dev_demos'
+        command: 'cd dev_demos && /bin/bash demos/01_license_plate/run_server.sh'
   - name: 01_license_plate__2 Test AI model
     actions:
       - type: exec
         component: python/python
-        command: '. /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py'
-        workdir: '${CHE_PROJECTS_ROOT}/dev_demos'
+        command: '. /tmp/.venv/bin/activate && python dev_demos/demos/01_license_plate/test_ai_model.py'
   - name: 01_license_plate__3 Test GPU computation
     actions:
       - type: exec
         component: python/python
-        command: '. /tmp/.venv/bin/activate && python demos/01_license_plate/test_gpu.py'
-        workdir: '${CHE_PROJECTS_ROOT}/dev_demos'
+        command: '. /tmp/.venv/bin/activate && python dev_demos/demos/01_license_plate/test_gpu.py'

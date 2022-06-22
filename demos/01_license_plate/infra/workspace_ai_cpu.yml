@@ -18,7 +18,7 @@ components:
       python.globalModuleInstallation: true
   - type: dockerimage
     alias: python
-    image: quay.io/eclipse/che-python-3.8:ce0526f
+    image: quay.io/manhah/license_plate_demo_cpu:latest
     memoryLimit: 4Gi
     mountSources: true
     endpoints:
