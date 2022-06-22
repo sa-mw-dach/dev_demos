@@ -39,7 +39,7 @@ commands:
       - type: exec
         component: python
         command: '/bin/bash demos/01_license_plate/run_server.sh'
-        workdir: '${CHE_PROJECTS_ROOT}'
+        workdir: '${CHE_PROJECTS_ROOT}/dev_demos'
   - name: 01_license_plate__2 Test AI model
     actions:
       - type: exec

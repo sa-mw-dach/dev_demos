@@ -1,6 +1,6 @@
 apiVersion: 1.0.0
 metadata:
-  generateName: crw_ai_cpu_
+  generateName: crw_ai_cpu_ag_
 components:
   - type: cheEditor
     alias: theia-editor
@@ -32,7 +32,7 @@ commands:
     actions:
       - type: exec
         component: python
-        command: '/bin/bash dev_demos/demos/01_license_plate/run_server.sh'
+        command: 'cd dev_demos && /bin/bash demos/01_license_plate/run_server.sh'
   - name: 01_license_plate__2 Test AI model
     actions:
       - type: exec
