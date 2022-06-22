@@ -2,7 +2,7 @@ Flask
 gunicorn
 opencv-python-headless
 keras
-tensorflow
+tensorflow-gpu
 scikit-image
 scikit-learn
 h5py
