@@ -1,0 +1,32 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: licenseplate-template
+spec:
+  params:
+    - description: The git repository url
+      name: git-repo-url
+    - default: master
+      description: The git revision
+      name: git-revision
+    - description: The name of the deployment to be created / patched
+      name: git-repo-name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1alpha1
+      kind: PipelineRun
+      metadata:
+        generateName: licenseplate-run-
+      spec:
+        params: null
+        pipelineRef:
+          name: licenseplate-pipeline
+        serviceAccountName: pipeline
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 500Mi

@@ -1,0 +1,8 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+   name: pipelines-demo-listener
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - triggerRef: licenseplate-trigger
