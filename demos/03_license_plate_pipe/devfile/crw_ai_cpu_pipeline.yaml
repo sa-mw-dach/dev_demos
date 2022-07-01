@@ -1,6 +1,6 @@
 apiVersion: 1.0.0
 metadata:
-  name: crw_ai_cpu_dxkf
+  name: crw_ai_cpu_pipeline
 projects:
   - name: dev_demos
     source:
