@@ -1,6 +1,6 @@
 apiVersion: 1.0.0
 metadata:
-  generateName: dev_space_ai_gpu_
+  generateName: dev-space-ai-gpu
 projects:
   - name: dev_demos
     source:
