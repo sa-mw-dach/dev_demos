@@ -21,10 +21,6 @@ components:
             resources:
               limits:
                 memory: 4Gi
-                nvidia.com/gpu: 1 # limiting to 1 GPU
               requests:
-                nvidia.com/gpu: 1 # requesting 1 GPU
-        nodeSelector:
-          nvidia.com/gpu.present: true
     type: kubernetes
     alias: python2
