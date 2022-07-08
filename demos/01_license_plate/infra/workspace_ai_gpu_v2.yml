@@ -8,16 +8,6 @@ projects:
       location: 'https://github.com/sa-mw-dach/dev_demos.git'
       branch: main
 components:
-  - type: cheEditor
-    alias: theia-editor
-    id: eclipse/che-theia/latest
-    memoryLimit: 1Gi
-  - type: chePlugin
-    id: ms-python/python/latest
-    preferences:
-      python.globalModuleInstallation: true
-  - id: redhat/vscode-yaml/latest
-    type: chePlugin
   - mountSources: true
     referenceContent: |
       apiVersion: v1
