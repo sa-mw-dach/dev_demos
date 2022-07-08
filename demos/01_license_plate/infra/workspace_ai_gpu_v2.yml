@@ -1,26 +1,30 @@
-apiVersion: 1.0.0
+schemaVersion: 2.1.0
 metadata:
-  generateName: dev-space-ai-gpu
-projects:
+  name: ai-gpu
+  version: 1.0.0
+  displayName: ai-gpu
+  description: Description...
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/python.svg
+  tags: ['Python', 'pip']
+  projectType: 'python'
+  language: 'python'
+starterProjects:
   - name: dev_demos
-    source:
-      type: git
-      location: 'https://github.com/sa-mw-dach/dev_demos.git'
-      branch: main
+    git:
+      remotes:
+        origin: https://github.com/sa-mw-dach/dev_demos.git
 components:
-  - mountSources: true
-    referenceContent: |
-      apiVersion: v1
-      kind: Pod
-      metadata:
-        name: python
-      spec:
-        containers:
-          - name: python
-            image: quay.io/manhah/license_plate_demo_gpu:latest
-            resources:
-              limits:
-                memory: 4Gi
-              requests:
-    type: kubernetes
-    alias: python2
+  - name: myk8deploy
+    kubernetes:
+      inlined: |
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: mypython
+        spec:
+          containers:
+            - name: mypython
+              image: quay.io/manhah/license_plate_demo_gpu:latest
+              resources:
+                limits:
+                  memory: 4Gi
