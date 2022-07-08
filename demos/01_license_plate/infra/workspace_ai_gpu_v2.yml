@@ -9,7 +9,7 @@ metadata:
   projectType: 'python'
   language: 'python'
 starterProjects:
-  - name: dev_demos
+  - name: devdemos
     git:
       remotes:
         origin: https://github.com/sa-mw-dach/dev_demos.git
