@@ -1,0 +1,40 @@
+apiVersion: 1.0.0
+metadata:
+  generateName: dev_space_ai_gpu_
+projects:
+  - name: dev_demos
+    source:
+      type: git
+      location: 'https://github.com/sa-mw-dach/dev_demos.git'
+      branch: main
+components:
+  - type: cheEditor
+    alias: theia-editor
+    id: eclipse/che-theia/latest
+    memoryLimit: 1Gi
+  - type: chePlugin
+    id: ms-python/python/latest
+    preferences:
+      python.globalModuleInstallation: true
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+  - mountSources: true
+    referenceContent: |
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: python
+      spec:
+        containers:
+          - name: python
+            image: quay.io/manhah/license_plate_demo_gpu:latest
+            resources:
+              limits:
+                memory: 4Gi
+                nvidia.com/gpu: 1 # limiting to 1 GPU
+              requests:
+                nvidia.com/gpu: 1 # requesting 1 GPU
+        nodeSelector:
+          nvidia.com/gpu.present: true
+    type: kubernetes
+    alias: python/python
