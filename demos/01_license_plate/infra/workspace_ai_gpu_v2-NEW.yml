@@ -68,9 +68,9 @@ commands:
       workingDir: '${PROJECTS_ROOT}/python-hello-world'
     id: run
   - exec:
-      name: "createGPUWorkload"
       component: "python"
       commandLine: "oc apply -f https://raw.githubusercontent.com/sa-mw-dach/dev_demos/feature/Devfile_v2/demos/01_license_plate/infra/kube_gpu_workload.yml"
+    id: create-gpu-workload
 events:
   postStart:
-    - "createGPUWorkload"
+    - "create-gpu-workload"

@@ -13,4 +13,4 @@ spec:
         requests:
           nvidia.com/gpu: 1 # requesting 1 GPU
   nodeSelector:
-    nvidia.com/gpu.present: true
+    nvidia.com/gpu.present: 'true'
