@@ -1,9 +1,6 @@
 schemaVersion: 2.1.0
 metadata:
   name: python-hello-world
-  namespace: user1-devspaces
-attributes:
-  controller.devfile.io/storage-type: per-user
 projects:
   - git:
       checkoutFrom:
