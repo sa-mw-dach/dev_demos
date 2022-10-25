@@ -17,7 +17,7 @@ components:
       sourceMapping: /projects
 commands:
   - exec:
-      commandLine: /bin/bash demos/01_license_plate/run_server.sh
+      commandLine: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64 && /bin/bash demos/01_license_plate/run_server.sh
       component: python
       group:
         kind: run
@@ -25,7 +25,7 @@ commands:
       workingDir: '${PROJECTS_ROOT}/dev-demos'
     id: 1runserver
   - exec:
-      commandLine: . /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py
+      commandLine: . /tmp/.venv/bin/activate && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64 && python demos/01_license_plate/test_ai_model.py
       component: python
       group:
         kind: run
@@ -40,10 +40,3 @@ commands:
       label: 3 Test GPU computation
       workingDir: '${PROJECTS_ROOT}/dev-demos'
     id: 3testgpu
-  - exec:
-      commandLine: ln -s /usr/local/cuda/lib64/libcusolver.so.11 /usr/local/cuda/lib64/libcusolver.so.10
-      component: python
-    id: fixcudaissue
-events:
-  postStart:
-    - "fixcudaissue"
