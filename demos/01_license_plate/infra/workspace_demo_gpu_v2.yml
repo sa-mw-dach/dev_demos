@@ -1,0 +1,27 @@
+schemaVersion: 2.1.0
+metadata:
+  name: developer-images
+attributes:
+  controller.devfile.io/storage-type: ephemeral
+  controller.devfile.io/scc: container-build
+components:
+- name: devtools
+  kubernetes:
+    inlined:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: devtools
+      spec:
+        containers:
+          - name: devtools
+            image: quay.io/devfile/universal-developer-image:ubi8-latest
+            resources:
+              limits:
+                memory: 2Gi
+                nvidia.com/gpu: 1 # limiting to 1 GPU
+              requests:
+                memory: 256Mi
+                nvidia.com/gpu: 1 # requesting 1 GPU
+        nodeSelector:
+          gpu: true
