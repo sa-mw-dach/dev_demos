@@ -16,15 +16,11 @@ components:
       apiVersion: v1
       kind: Pod
       metadata:
-        name: devtools
+        name: nvidia-test
       spec:
         containers:
-          - name: devtools
-            image: nvcr.io/nvidia/driver@sha256:3df118f2330e95db3c76173cca35e542b2da120ec0bb8f6aff83c4c96c0c2daf
+          - name: nvidia-test
+            image: "nvcr.io/nvidia/driver@sha256:3df118f2330e95db3c76173cca35e542b2da120ec0bb8f6aff83c4c96c0c2daf"
             resources:
               limits:
-                memory: 2Gi
-                nvidia.com/gpu: 1 # limiting to 1 GPU
-              requests:
-                memory: 1Gi
-                nvidia.com/gpu: 1 # requesting 1 GPU
+                nvidia.com/gpu: 1
