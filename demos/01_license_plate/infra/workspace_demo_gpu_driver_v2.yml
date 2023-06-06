@@ -4,9 +4,13 @@ metadata:
 attributes:
   controller.devfile.io/storage-type: ephemeral
 components:
-- name: nvidia-test
+- name: test-nvidia
   container:
     image: nvcr.io/nvidia/driver@sha256:3df118f2330e95db3c76173cca35e542b2da120ec0bb8f6aff83c4c96c0c2daf
     memoryLimit: 4Gi
-    mountSources: false
+- name: test-udi
+  container:
+    image: quay.io/devfile/universal-developer-image:ubi8-latest
+    memoryLimit: 4Gi
+    mountSources: true
     sourceMapping: /projects
