@@ -1,26 +1,12 @@
 schemaVersion: 2.1.0
 metadata:
-  name: developer-images
+  name: nvidia-test
 attributes:
   controller.devfile.io/storage-type: ephemeral
 components:
-- name: test-udi
+- name: nvidia-test
   container:
-    image: quay.io/devfile/universal-developer-image:ubi8-latest
+    image: nvcr.io/nvidia/driver@sha256:3df118f2330e95db3c76173cca35e542b2da120ec0bb8f6aff83c4c96c0c2daf
     memoryLimit: 4Gi
-    mountSources: true
+    mountSources: false
     sourceMapping: /projects
-- name: devtools
-  kubernetes:
-    inlined: |
-      apiVersion: v1
-      kind: Pod
-      metadata:
-        name: nvidia-test
-      spec:
-        containers:
-          - name: nvidia-test
-            image: "nvcr.io/nvidia/driver@sha256:3df118f2330e95db3c76173cca35e542b2da120ec0bb8f6aff83c4c96c0c2daf"
-            resources:
-              limits:
-                nvidia.com/gpu: 1
