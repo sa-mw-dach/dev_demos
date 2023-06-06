@@ -19,7 +19,7 @@ components:
             resources:
               limits:
                 memory: 2Gi
-                nvidia.com/gpu: 1 # limiting to 1 GPU
+                nvidia.com/gpu: '1' # limiting to 1 GPU
               requests:
                 memory: 256Mi
-                nvidia.com/gpu: 1 # requesting 1 GPU
+                nvidia.com/gpu: '1' # requesting 1 GPU
