@@ -4,21 +4,27 @@ metadata:
 attributes:
   controller.devfile.io/storage-type: ephemeral
 components:
+- name: test-udi
+  container:
+    image: quay.io/devfile/universal-developer-image:ubi8-latest
+    memoryLimit: 4Gi
+    mountSources: true
+    sourceMapping: /projects
 - name: devtools
-    kubernetes:
-      inlined: |
-        apiVersion: v1
-        kind: Pod
-        metadata:
-          name: devtools
-        spec:
-          containers:
-            - name: devtools
-              image: nvcr.io/nvidia/driver@sha256:3df118f2330e95db3c76173cca35e542b2da120ec0bb8f6aff83c4c96c0c2daf
-              resources:
-                limits:
-                  memory: 2Gi
-                  nvidia.com/gpu: 1 # limiting to 1 GPU
-                requests:
-                  memory: 1Gi
-                  nvidia.com/gpu: 1 # requesting 1 GPU
+  kubernetes:
+    inlined: |
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: devtools
+      spec:
+        containers:
+          - name: devtools
+            image: nvcr.io/nvidia/driver@sha256:3df118f2330e95db3c76173cca35e542b2da120ec0bb8f6aff83c4c96c0c2daf
+            resources:
+              limits:
+                memory: 2Gi
+                nvidia.com/gpu: 1 # limiting to 1 GPU
+              requests:
+                memory: 1Gi
+                nvidia.com/gpu: 1 # requesting 1 GPU
