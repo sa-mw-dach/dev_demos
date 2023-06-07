@@ -1,0 +1,12 @@
+schemaVersion: 2.1.0
+metadata:
+  name: test-workspace-udi-private
+attributes:
+  controller.devfile.io/storage-type: ephemeral
+components:
+- name: test-container-udi-private
+  container:
+    image: quay.io/redhat_emp1/manhah_test_private:ubi8-latest
+    memoryLimit: 4Gi
+    mountSources: true
+    sourceMapping: /projects
