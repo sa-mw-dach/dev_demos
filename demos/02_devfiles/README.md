@@ -37,3 +37,7 @@ To resolve this, one option is to create a Kubernetes secret within the user nam
 
 Now one can open the Dev Spaces Dashboard, paste the link to the raw-formatted devfile in the "Git Repo URL" field and press "Create & Open". It is important to use the raw format, e.g. https://raw.githubusercontent.com/sa-mw-dach/dev_demos/main/demos/02_devfiles/devfile_udi_private.yaml.
 
+## GPU stuff
+Run:
+`/tmp/sample`
+`nvidia-smi`

@@ -1,13 +1,21 @@
-schemaVersion: 2.1.0
+schemaVersion: 2.2.0
 metadata:
   name: test-workspace-gpu
 attributes:
   controller.devfile.io/storage-type: ephemeral
+  pod-overrides:
+    spec:
+      resources:
+        limits:
+          memory: 4Gi
+          nvidia.com/gpu: 1 # limiting to 1 GPU
+        requests:
+          memory: 2Gi
+          nvidia.com/gpu: 1 # requesting 1 GPU
 components:
 - name: test-container-gpu
   container:
     image: nvidia/samples:vectoradd-cuda11.6.0-ubi8
-    memoryLimit: 4Gi
     mountSources: true
     sourceMapping: /projects
     command: ['tail']
