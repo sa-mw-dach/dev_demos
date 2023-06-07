@@ -1,7 +1,7 @@
 # Demo 02 - Dev Spaces Devfiles
 
 ## Introduction
-Some devfiles for testing Dev Spaces functionality.
+Some devfiles for testing Dev Spaces functionality. Tested on Dev Spaces 3.6.
 
 ## Simple devfile
 A simple devfile for creating a Dev Spaces workspace is given in [devfile_udi.yaml](devfile_udi.yaml).
