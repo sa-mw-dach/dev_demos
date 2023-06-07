@@ -3,8 +3,10 @@ metadata:
   name: test-workspace-gpu
 attributes:
   controller.devfile.io/storage-type: ephemeral
-  pod-overrides:
-    spec:
+components:
+- name: test-container-gpu
+  attributes:
+    container-overrides:
       resources:
         limits:
           memory: 4Gi
@@ -12,8 +14,6 @@ attributes:
         requests:
           memory: 2Gi
           nvidia.com/gpu: 1 # requesting 1 GPU
-components:
-- name: test-container-gpu
   container:
     image: nvidia/samples:vectoradd-cuda11.6.0-ubi8
     mountSources: true
