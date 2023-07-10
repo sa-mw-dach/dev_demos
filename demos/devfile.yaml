@@ -1,17 +1,22 @@
-schemaVersion: 2.1.0
+schemaVersion: 2.2.0
 metadata:
-  name: test-workspace-udi-extension-git
-projects:
-  - git:
-      checkoutFrom:
-        revision: main
-      remotes:
-        origin: 'https://github.com/manhah/test-public.git'
-    name: test-public
+  name: test-workspace-gpu
+attributes:
+  controller.devfile.io/storage-type: ephemeral
 components:
-- name: test-container-udi-extension-git
+- name: test-container-gpu
+  attributes:
+    container-overrides:
+      resources:
+        limits:
+          memory: 4Gi
+          nvidia.com/gpu: 1 # limiting to 1 GPU
+        requests:
+          memory: 2Gi
+          nvidia.com/gpu: 1 # requesting 1 GPU
   container:
-    image: quay.io/devfile/universal-developer-image:ubi8-latest
-    memoryLimit: 4Gi
+    image: nvidia/samples:vectoradd-cuda11.6.0-ubi8
     mountSources: true
     sourceMapping: /projects
+    command: ['tail']
+    args: ['-f', '/dev/null']
