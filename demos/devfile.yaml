@@ -1,16 +1,15 @@
 schemaVersion: 2.1.0
 metadata:
-  name: test-workspace-udi-extension
-attributes:
-  controller.devfile.io/storage-type: ephemeral
-  .vscode/extensions.json: |
-    {
-      "recommendations": [
-        "redhat.ansible"
-      ]
-    }  
+  name: test-workspace-udi-extension-git
+projects:
+  - git:
+      checkoutFrom:
+        revision: main
+      remotes:
+        origin: 'https://github.com/manhah/test-public.git'
+    name: test-public
 components:
-- name: test-container-udi-extension
+- name: test-container-udi-extension-git
   container:
     image: quay.io/devfile/universal-developer-image:ubi8-latest
     memoryLimit: 4Gi
