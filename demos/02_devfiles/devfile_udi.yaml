@@ -4,7 +4,7 @@ metadata:
 attributes:
   controller.devfile.io/storage-type: ephemeral
 components:
-- name: test-container-udi
+- name: testContainerUdi
   container:
     image: quay.io/devfile/universal-developer-image:ubi8-latest
     memoryLimit: 4Gi
