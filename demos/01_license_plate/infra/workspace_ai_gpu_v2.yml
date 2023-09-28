@@ -2,9 +2,8 @@ schemaVersion: 2.1.0
 metadata:
   name: ai-gpu
 components:
-  - name: python
+  - name: tools
     container:
-      image: quay.io/manhah/license_plate_demo_gpu:latest
-      memoryLimit: 4Gi
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryLimit: 1G
       mountSources: true
-      sourceMapping: /projects
