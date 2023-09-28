@@ -1,0 +1,42 @@
+schemaVersion: 2.1.0
+metadata:
+  name: ai-gpu
+projects:
+  - git:
+      checkoutFrom:
+        revision: main
+      remotes:
+        origin: 'https://github.com/sa-mw-dach/dev_demos.git'
+    name: dev-demos
+components:
+  - name: python
+    container:
+      image: quay.io/manhah/license_plate_demo_gpu:latest
+      memoryLimit: 4Gi
+      mountSources: true
+      sourceMapping: /projects
+commands:
+  - exec:
+      commandLine: /bin/bash demos/01_license_plate/run_server.sh
+      component: python
+      group:
+        kind: run
+      label: 1 Run server
+      workingDir: '${PROJECTS_ROOT}/dev-demos'
+    id: 1runserver
+  - exec:
+      commandLine: . /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py
+      component: python
+      group:
+        kind: run
+      label: 2 Test AI model
+      workingDir: '${PROJECTS_ROOT}/dev-demos'
+    id: 2testaimodel
+  - exec:
+      commandLine: . /tmp/.venv/bin/activate && python demos/01_license_plate/test_gpu.py
+      component: python
+      group:
+        kind: run
+      label: 3 Test GPU computation
+      workingDir: '${PROJECTS_ROOT}/dev-demos'
+    id: 3testgpu
