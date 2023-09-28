@@ -8,28 +8,3 @@ components:
       memoryLimit: 4Gi
       mountSources: true
       sourceMapping: /projects
-commands:
-  - exec:
-      commandLine: /bin/bash demos/01_license_plate/run_server.sh
-      component: python
-      group:
-        kind: run
-      label: 1 Run server
-      workingDir: '${PROJECTS_ROOT}/dev-demos'
-    id: 1runserver
-  - exec:
-      commandLine: . /tmp/.venv/bin/activate && python demos/01_license_plate/test_ai_model.py
-      component: python
-      group:
-        kind: run
-      label: 2 Test AI model
-      workingDir: '${PROJECTS_ROOT}/dev-demos'
-    id: 2testaimodel
-  - exec:
-      commandLine: . /tmp/.venv/bin/activate && python demos/01_license_plate/test_gpu.py
-      component: python
-      group:
-        kind: run
-      label: 3 Test GPU computation
-      workingDir: '${PROJECTS_ROOT}/dev-demos'
-    id: 3testgpu
