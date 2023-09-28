@@ -1,13 +1,6 @@
 schemaVersion: 2.1.0
 metadata:
-  name: aiGPU
-projects:
-  - git:
-      checkoutFrom:
-        revision: main
-      remotes:
-        origin: 'https://github.com/sa-mw-dach/dev_demos.git'
-    name: dev-demos
+  name: ai-gpu
 components:
   - name: python
     container:
