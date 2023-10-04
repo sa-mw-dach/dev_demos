@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: model-pipeline
+spec:
+  tasks:
+    - name: fetch-repository
+      params:
+        - name: url
+          value: 'https://github.com/sa-mw-dach/dev_demos.git'
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: deleteExisting
+          value: 'true'
+        - name: verbose
+          value: 'true'
+        - name: revision
+          value: feature/gitops
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+    - name: build-push-image
+      params:
+        - name: IMAGE
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/gitops-demo/licenseplate
+        # - name: BUILDER_IMAGE
+        #   value: >-
+        #     registry.redhat.io/rhel8/buildah@sha256:99cae35f40c7ec050fed3765b2b27e0b8bbea2aa2da7c16408e2ca13c60ff8ee
+        # - name: STORAGE_DRIVER
+        #   value: vfs
+        - name: DOCKERFILE
+          value: ./demos/04_license_plate_gitops/a_model/pipeline/Dockerfile
+        - name: CONTEXT
+          value: ./
+        # - name: TLSVERIFY
+        #   value: 'true'
+        # - name: FORMAT
+        #   value: oci
+      runAfter:
+        - fetch-repository
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+  workspaces:
+    - name: shared-workspace
