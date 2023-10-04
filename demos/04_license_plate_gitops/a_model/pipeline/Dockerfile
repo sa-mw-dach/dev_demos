@@ -6,9 +6,9 @@ COPY external/licence-plate-workshop/ .
 
 # Install dependencies
 RUN dnf -y install python38 python38-pip python38-devel git \
-    && python -m pip install --upgrade pip \
-    && pip install -r requirements.txt \
-    && pip install requests
+    && python3 -m pip install --upgrade pip \
+    && pip3 install -r requirements.txt \
+    && pip3 install requests
 
 # Launch Flask and expose port 5000
 ENV FLASK_APP=wsgi.py 
