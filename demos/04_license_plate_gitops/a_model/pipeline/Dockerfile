@@ -8,5 +8,5 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY external/licence-plate-workshop/ .
 ENV FLASK_APP=wsgi.py 
-CMD ["flask", "run", "--host=0.0.0.0"]
+ENTRYPOINT ["flask", "run", "--host=0.0.0.0"]
 EXPOSE 5000/tcp
