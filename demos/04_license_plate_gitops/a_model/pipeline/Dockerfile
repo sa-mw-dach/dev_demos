@@ -1,16 +1,13 @@
-FROM docker.io/nvidia/cuda:11.6.2-cudnn8-devel-ubi8
+FROM registry.access.redhat.com/ubi8/python-38 as build
 
 # Set working directory and copy files from git repo
 WORKDIR /opt/app-root/src
 COPY external/licence-plate-workshop/ .
 
 # Install dependencies
-RUN dnf -y install python38 python38-pip python38-devel git \
-    && python3 -m pip install --upgrade pip \
-    && pip3 install -r requirements.txt \
-    && pip3 install requests
+RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 
 # Launch Flask and expose port 5000
 ENV FLASK_APP=wsgi.py 
-ENTRYPOINT ["flask", "run", "--host=0.0.0.0"]
+CMD ["flask", "run", "--host=0.0.0.0"]
 EXPOSE 5000/tcp
