@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: licenseplate
+spec:
+  ports:
+    - name: 5000-tcp
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+  selector:
+    app: licenseplate
+  type: ClusterIP
