@@ -3,6 +3,11 @@ kind: Pipeline
 metadata:
   name: model-pipeline
 spec:
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: IMAGE_TAG
+      type: string
   tasks:
     - name: fetch-repository
       params:
@@ -29,19 +34,10 @@ spec:
         - name: IMAGE
           value: >-
             image-registry.openshift-image-registry.svc:5000/gitops-demo/licenseplate
-        # - name: BUILDER_IMAGE
-        #   value: >-
-        #     registry.redhat.io/rhel8/buildah@sha256:99cae35f40c7ec050fed3765b2b27e0b8bbea2aa2da7c16408e2ca13c60ff8ee
-        # - name: STORAGE_DRIVER
-        #   value: vfs
         - name: DOCKERFILE
           value: ./demos/04_license_plate_gitops/a_model/pipeline/Dockerfile
         - name: CONTEXT
           value: ./
-        # - name: TLSVERIFY
-        #   value: 'true'
-        # - name: FORMAT
-        #   value: oci
       runAfter:
         - fetch-repository
       taskRef:
@@ -50,5 +46,15 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-  workspaces:
-    - name: shared-workspace
+    - name: tage-image
+      params:
+        - name: SCRIPT
+          value: oc tag licenseplate@$(tasks.buildah.results.IMAGE_DIGEST) licenseplate:$(params.IMAGE_TAG)
+      runAfter:
+        - build-push-image
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: shared-workspace
