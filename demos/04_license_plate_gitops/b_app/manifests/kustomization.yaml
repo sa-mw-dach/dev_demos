@@ -1,0 +1,4 @@
+resources:
+- licenseplate-deployment.yaml
+- licenseplate-service.yaml
+- licenseplate-route.yaml

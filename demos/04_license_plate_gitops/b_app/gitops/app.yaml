@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-licenseplate
+  namespace: gitops-demo
+spec:
+  destination:
+    namespace: gitops-demo
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    directory:
+      recurse: true
+    path: demos/04_license_plate_gitops/b_app/manifests
+    repoURL: https://github.com/sa-mw-dach/dev_demos.git
+    targetRevision: feature/gitops
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
