@@ -49,7 +49,7 @@ spec:
     - name: tage-image
       params:
         - name: SCRIPT
-          value: oc tag licenseplate@$(tasks.buildah.results.IMAGE_DIGEST) licenseplate:$(params.IMAGE_TAG)
+          value: oc tag licenseplate@$(tasks.build-push-image.results.IMAGE_DIGEST) licenseplate:$(params.IMAGE_TAG)
       runAfter:
         - build-push-image
       taskRef:
