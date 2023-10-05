@@ -2,7 +2,7 @@ FROM docker.io/nvidia/cuda:11.6.2-cudnn8-devel-ubi8
 
 # Set working directory and copy files from git repo
 WORKDIR /opt/app-root/src
-COPY external/licence-plate-workshop/ .
+COPY demos/04_license_plate_gitops/a_model/src/ .
 
 # Install dependencies
 RUN dnf -y install python38 python38-pip python38-devel git \

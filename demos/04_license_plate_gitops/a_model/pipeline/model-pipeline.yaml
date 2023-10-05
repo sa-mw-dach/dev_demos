@@ -35,7 +35,7 @@ spec:
           value: >-
             image-registry.openshift-image-registry.svc:5000/gitops-demo/licenseplate
         - name: DOCKERFILE
-          value: ./demos/04_license_plate_gitops/a_model/pipeline/Dockerfile
+          value: ./demos/04_license_plate_gitops/a_model/pipeline/Containerfile
         - name: CONTEXT
           value: ./
       runAfter:
