@@ -20,3 +20,6 @@ def test_prediction():
 
     # Return model response
     return response.json()
+
+if __name__ == "__main__":
+    application.run()
