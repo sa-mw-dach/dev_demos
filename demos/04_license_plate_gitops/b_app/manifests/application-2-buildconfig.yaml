@@ -1,0 +1,76 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: "application-build" 
+spec:
+  runPolicy: "Serial" 
+  triggers: 
+    -
+      type: "ImageChange"
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/sa-mw-dach/dev_demos.git'
+      ref: feature/gitops
+    contextDir: /demos/04_license_plate_gitops/b_app/src
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: 'python:3.8-ubi8'
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'application:latest'
+
+
+
+
+# kind: BuildConfig
+# apiVersion: build.openshift.io/v1
+# metadata:
+#   annotations:
+#     app.openshift.io/vcs-ref: feature/gitops
+#     app.openshift.io/vcs-uri: 'https://github.com/sa-mw-dach/dev_demos.git'
+#     openshift.io/generated-by: OpenShiftWebConsole
+#   name: application
+#   labels:
+#     app: application
+#     app.kubernetes.io/component: application
+#     app.kubernetes.io/instance: application
+#     app.kubernetes.io/name: application
+#     app.kubernetes.io/part-of: application-app
+#     app.openshift.io/runtime: python
+#     app.openshift.io/runtime-version: 3.8-ubi8
+# spec:
+#   nodeSelector: null
+#   output:
+#     to:
+#       kind: ImageStreamTag
+#       name: 'application:latest'
+#   resources: {}
+#   successfulBuildsHistoryLimit: 5
+#   failedBuildsHistoryLimit: 5
+#   strategy:
+#     type: Source
+#     sourceStrategy:
+#       from:
+#         kind: ImageStreamTag
+#         namespace: openshift
+#         name: 'python:3.8-ubi8'
+#   postCommit: {}
+#   source:
+#     type: Git
+#     git:
+#       uri: 'https://github.com/sa-mw-dach/dev_demos.git'
+#       ref: feature/gitops
+#     contextDir: /demos/04_license_plate_gitops/b_app/src
+#   triggers:
+#     - type: Generic
+#       generic:
+#         secretReference:
+#           name: application-generic-webhook-secret
+#     - type: ConfigChange
+#   runPolicy: Serial

@@ -1,0 +1,53 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+  #   alpha.image.policy.openshift.io/resolve-names: '*'
+  #   app.openshift.io/route-disabled: 'false'
+  #   app.openshift.io/vcs-ref: feature/gitops
+  #   app.openshift.io/vcs-uri: 'https://github.com/sa-mw-dach/dev_demos.git'
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"application:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"application\")].image","pause":"true"}]
+  #   openshift.io/generated-by: OpenShiftWebConsole
+  name: application
+  # labels:
+  #   app: application
+  #   app.kubernetes.io/component: application
+  #   app.kubernetes.io/instance: application
+  #   app.kubernetes.io/name: application
+  #   app.kubernetes.io/part-of: application-app
+  #   app.openshift.io/runtime: python
+  #   app.openshift.io/runtime-version: 3.8-ubi8
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: application
+  template:
+    metadata:
+      labels:
+        app: application
+    spec:
+      containers:
+        - name: application
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/application:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
