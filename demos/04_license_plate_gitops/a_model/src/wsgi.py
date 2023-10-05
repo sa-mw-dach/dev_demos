@@ -4,7 +4,7 @@ from prediction import predict
 
 application = Flask(__name__)
 
-VERSION = 'v4'
+VERSION = 'v5'
 
 @application.route('/')
 @application.route('/status')
