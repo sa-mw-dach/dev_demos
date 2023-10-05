@@ -46,7 +46,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-    - name: tage-image
+    - name: tag-image
       params:
         - name: SCRIPT
           value: oc tag licenseplate@$(tasks.build-push-image.results.IMAGE_DIGEST) licenseplate:$(params.IMAGE_TAG)
