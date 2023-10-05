@@ -1,4 +1,4 @@
 resources:
-- licenseplate-deployment.yaml
-- licenseplate-service.yaml
-- licenseplate-route.yaml
+- model-deployment.yaml
+- model-service.yaml
+- model-route.yaml
