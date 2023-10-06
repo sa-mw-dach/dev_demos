@@ -10,6 +10,13 @@ The first demo of this series is based on the "Red Hat OpenShift Data Science Wo
 
 This part contains some devfiles for testing Dev Spaces functionality. 
 
+## [Demo 03 - OpenShift Pipelines](demos/03_license_plate_pipe/README.md)
+
+In this part, OpenShift Pipelines is demonstrated.
+
+## [Demo 04 - Integrating the licence plate recognition model into an application](demos/04_license_plate_gitops/README.md)
+
+This demo shows some aspects of integrating an AI/ML model into an app using pipelines and a GitOps approach.
 
 
 [^license_plate_desc]: https://rh-aiservices-bu.github.io/licence-plate-workshop/
