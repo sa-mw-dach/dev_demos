@@ -31,12 +31,12 @@ Working directory for the following steps is `demos/04_license_plate_gitops/a_mo
 
 1) Create a Persistent Volume Claim (PVC), which will be needed later for executing the pipeline:
     ```
-    oc apply -f pipelines/model-2-pvc.yaml
+    oc apply -f pipeline/model-2-pvc.yaml
     ```
 
 1) Now the pipeline for creating an image out of the model can be added to OpenShift Pipelines by
     ```
-    oc apply -f pipelines/model-3-pipeline.yaml
+    oc apply -f pipeline/model-3-pipeline.yaml
     ```
     Go to the OpenShift Console and you can find the newly added pipeline `model-pipeline` under `Pipelines` in the left navigation bar.
 
