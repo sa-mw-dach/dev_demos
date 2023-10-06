@@ -1,12 +1,12 @@
-kind: Route
-apiVersion: route.openshift.io/v1
-metadata:
-  name: licenseplate
-spec:
-  to:
-    kind: Service
-    name: licenseplate
-    weight: 100
-  port:
-    targetPort: 5000-tcp
-  wildcardPolicy: None
+# kind: Route
+# apiVersion: route.openshift.io/v1
+# metadata:
+#   name: licenseplate
+# spec:
+#   to:
+#     kind: Service
+#     name: licenseplate
+#     weight: 100
+#   port:
+#     targetPort: 5000-tcp
+#   wildcardPolicy: None
