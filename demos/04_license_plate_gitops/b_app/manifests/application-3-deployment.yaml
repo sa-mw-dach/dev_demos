@@ -7,7 +7,7 @@ metadata:
   #   app.openshift.io/vcs-ref: feature/gitops
   #   app.openshift.io/vcs-uri: 'https://github.com/sa-mw-dach/dev_demos.git'
     image.openshift.io/triggers: >-
-      [{"from":{"kind":"ImageStreamTag","name":"application:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"application\")].image","pause":"true"}]
+      [{"from":{"kind":"ImageStreamTag","name":"application:latest","namespace":"gitops-demo"},"fieldPath":"spec.template.spec.containers[?(@.name==\"application\")].image","pause":"true"}]
   #   openshift.io/generated-by: OpenShiftWebConsole
   name: application
   # labels:
@@ -31,7 +31,7 @@ spec:
       containers:
         - name: application
           image: >-
-            image-registry.openshift-image-registry.svc:5000/application:latest
+            image-registry.openshift-image-registry.svc:5000/gitops-demo/application:latest
           ports:
             - containerPort: 8080
               protocol: TCP
