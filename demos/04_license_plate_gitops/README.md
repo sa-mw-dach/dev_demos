@@ -1,4 +1,4 @@
-# Demo 04 - Integrating the licence plate recognition model into an application
+# Demo 04 - Integrating an AI/ML model into an application
 
 ## Introduction
 The fourth demo of this series is again based on the "Red Hat OpenShift Data Science Workshop - Licence plate recognition"[^license_plate_desc] and shows some aspects of integrating an AI/ML model into an app using pipelines and a GitOps approach.
