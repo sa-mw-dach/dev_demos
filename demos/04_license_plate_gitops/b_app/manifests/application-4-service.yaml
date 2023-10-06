@@ -1,0 +1,26 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: application
+  # labels:
+  #   app: application
+  #   app.kubernetes.io/component: application
+  #   app.kubernetes.io/instance: application
+  #   app.kubernetes.io/name: application
+  #   app.kubernetes.io/part-of: application-app
+  #   app.openshift.io/runtime: python
+  #   app.openshift.io/runtime-version: 3.8-ubi8
+  # annotations:
+  #   app.openshift.io/vcs-ref: feature/gitops
+  #   app.openshift.io/vcs-uri: 'https://github.com/sa-mw-dach/dev_demos.git'
+  #   openshift.io/generated-by: OpenShiftWebConsole
+spec:
+  ports:
+    - name: 8080-tcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+  selector:
+    app: application
+    deploymentconfig: application

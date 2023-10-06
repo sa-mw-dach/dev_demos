@@ -1,0 +1,20 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: application
+  # labels:
+  #   app: application
+  #   app.kubernetes.io/component: application
+  #   app.kubernetes.io/instance: application
+  #   app.kubernetes.io/name: application
+  #   app.kubernetes.io/part-of: application-app
+  #   app.openshift.io/runtime: python
+  #   app.openshift.io/runtime-version: 3.8-ubi8
+spec:
+  to:
+    kind: Service
+    name: application
+    weight: 100
+  port:
+    targetPort: 8080-tcp
+  wildcardPolicy: None
