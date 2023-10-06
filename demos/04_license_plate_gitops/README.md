@@ -79,4 +79,4 @@ Working directory for the following steps is `demos/04_license_plate_gitops/b_ap
 
 
 [^license_plate_desc]: https://rh-aiservices-bu.github.io/licence-plate-workshop/
-[^fork]: If modifications want to be done on the repo in order to test the different version tags, the repo `https://github.com/sa-mw-dach/dev_demos.git` needs to be forked and the changes need to be done there. Additionally then in the entire code base the URL of the original repo needs to be exchanged by the URL of the forked repo.
+[^fork]: If modifications want to be done on the repo in order to test the different version tags, the repo `https://github.com/sa-mw-dach/dev_demos.git` needs to be forked and the changes need to be done there. Additionally in the entire code base the URL of the original repo needs to be replaced by the URL of the forked repo.
