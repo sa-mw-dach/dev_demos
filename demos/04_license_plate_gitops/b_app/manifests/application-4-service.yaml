@@ -23,4 +23,3 @@ spec:
   type: ClusterIP
   selector:
     app: application
-    deploymentconfig: application
