@@ -14,6 +14,12 @@ spec:
     path: demos/04_license_plate_gitops/b_app/manifests
     repoURL: https://github.com/sa-mw-dach/dev_demos.git
     targetRevision: feature/gitops
+  ignoreDifferences:
+    - group: apps
+      jsonPointers:
+        - /spec/template/spec/containers
+      kind: Deployment
+      name: application
   syncPolicy:
     automated:
       prune: true
