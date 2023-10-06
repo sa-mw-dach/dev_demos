@@ -71,11 +71,11 @@ Working directory for the following steps is `demos/04_license_plate_gitops/b_ap
 
     Now add to the URL a `/test` string and go to that address. The resulting json string will look like `{"model version":"v1", "THE_PREDICTION_OF_THE_MODEL"}`, if `v1` is the version tag used.
 
-1) Assume that the second version of the model with version tag `v2` has been validated and shall be incorporated in the application. Go to file `manifests/model-1-deployment.yaml`, where the model to be used in the application is defined. Search for the image tag 'v1' and replace it with 'v2'.
+1) Assume that the second version of the model with version tag `v2` has been validated and shall be incorporated in the application. Go to file `manifests/model-1-deployment.yaml`, where the model to be used in the application is defined. Search for the image tag `v1` and replace it with `v2`.
 
     After commiting and pushing this change to the git repo, OpenShift GitOps will compare the version tag inside the git repo with the deployment in the OpenShift Cluster and detect a change. Subsequently, it modifes the Cluster configuration so that it matches the definitions in the git repo. Meaning that the version `v2' of the model will be incorporated into the app.
 
-    Now go again to the app URL `/test`. The resulting json string will look like `{"model version":"v2", "THE_PREDICTION_OF_THE_MODEL"}`, i.e. showing the second version of the license plate model.
+    Now go again to the app URL `/test`. The resulting json string will look like `{"model version":"v2", "THE_PREDICTION_OF_THE_MODEL"}`, i.e. showing the second version of the license plate model as was desired.
 
 
 [^license_plate_desc]: https://rh-aiservices-bu.github.io/licence-plate-workshop/
