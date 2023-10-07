@@ -1,7 +1,6 @@
 resources:
 - model-1-deployment.yaml
 - model-2-service.yaml
-- model-3-route.yaml
 - application-1-imagestream.yaml
 - application-2-buildconfig.yaml
 - application-3-deployment.yaml
