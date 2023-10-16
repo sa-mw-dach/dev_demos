@@ -13,8 +13,10 @@ In order to be able to run the demo, the following requirements need to be fullf
 
 ## First steps
 1) Open OpenShift Dev Spaces & create an "Empty Workspace" (this will use the Universal Developer Image, UDI)
-1) Clone the following git repo: `https://github.com/sa-mw-dach/dev_demos.git`
-1) Open a terminal & login to OpenShift
+1) Inside the newly created workspace, open a terminal and clone the following git repo: `https://github.com/sa-mw-dach/dev_demos.git`
+1) Inside the terminal, login to OpenShift
+
+**Important note**: If modifications want to be done on the repo in order to test modifying the model or application later, the repo `https://github.com/sa-mw-dach/dev_demos.git` needs to be forked and the changes need to be done there, eventually also creating a dediated branch inside the forked repo. Additionally, in the entire code base in folder `demos/04_license_plate_gitops` the URL and branch (main) of the original repo need to be replaced by the URL and branch of the forked repo.
 
 ## Create a container image of the AI/ML model
 In the following, the license plate model is backed into a container image and stored in the OpenShift-internal integrated container image registry.
@@ -44,7 +46,7 @@ Working directory for the following steps is `demos/04_license_plate_gitops/a_mo
 
     The image with the model from the `src` of the git repo can now be found under the Administration View --> Builds --> ImageStreams. When selecting the name of the image `licenseplate` in the list, one can find the image tags at the bottom of the page.
 
-1) Now the model itself or simply some version variable (for demonstration purposes) can be modified in the `src` folder. Afterwards the code is commited and pushed to the repo (for that you need to have the repo being forked as is explained here[^fork]). Then the pipeline can be run again using a new version tag, e.g. `v2`. 
+1) Now the model itself or simply some version variable (for demonstration purposes) can be modified in the `src` folder. Afterwards the code is commited and pushed to the repo (for that you need to have the repo being forked as is explained above). Then the pipeline can be run again using a new version tag, e.g. `v2`. 
 
     When going to the `licensplate` repo under View --> Builds --> ImageStreams, one can see both images with the respective tags. 
 
@@ -79,4 +81,3 @@ Working directory for the following steps is `demos/04_license_plate_gitops/b_ap
 
 
 [^license_plate_desc]: https://rh-aiservices-bu.github.io/licence-plate-workshop/
-[^fork]: If modifications want to be done on the repo in order to test the different version tags, the repo `https://github.com/sa-mw-dach/dev_demos.git` needs to be forked and the changes need to be done there. Additionally in the entire code base the URL of the original repo needs to be replaced by the URL of the forked repo.
