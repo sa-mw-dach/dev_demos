@@ -81,9 +81,18 @@ The Ollama web server that provides communication with the local LLMs is deploye
 1) Lastly, the local LLM needs to be incorporated into Continue. Thus go to Continue's config.py (`~/.continue/config.py`) and add the Ollama web server as described [here](https://continue.dev/docs/reference/Models/ollama) by adding
 
     ```python
-    default=Ollama(
-        model="wizardcoder:python",
-        server_url="http://ollama:11434"
+    from continuedev.libs.llm.ollama import Ollama
+
+    ...
+
+    config = ContinueConfig(
+        ...
+        models=Models(
+            default=Ollama(
+                model="wizardcoder:python",
+                server_url="http://ollama:11434"
+            )
+        )
     )
     ```
 
