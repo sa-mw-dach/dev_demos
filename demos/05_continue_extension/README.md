@@ -52,9 +52,43 @@ Basically the instructions for installing Continue in an on-prem air-gapped envi
 
 ## Adapt Continue to use a local LLM
 
-1) Inside the newly created workspace, open a terminal and clone the following git repo: `https://github.com/sa-mw-dach/dev_demos.git`
+Since the ultimate goal of this demo is to have a personal AI assistant for application development in a private on-prem air-gapped environment, the next step is to use a local LLM within Continue.
 
-1)  ...
+When looking into the [documentation](https://continue.dev/docs/customization/models), multiple local models can be used with Continue. For the demo at hand, the Ollama framework is used as interface to Continue, which is able to run the local LLMs as described [here](https://github.com/jmorganca/ollama#model-library) and [here](https://ollama.ai/library). 
+
+The Ollama web server that provides communication with the local LLMs is deployed in OpenShift as follows:
+
+1) Inside the OpenShift Dev Spaces workspace, open a terminal and clone the following git repo: `https://github.com/sa-mw-dach/dev_demos.git`
+
+1) In the terminal, login to OpenShift and go to the namespace/project, where the OpenShift Dev Spaces workspace is running (e.g. "user1-devspaces").
+
+1) Deploy the resources for the Ollama web server (i.e. a PVC for the Ollama data, a deployment comprising the Ollama web server in a container as well as a service that provides access to the web server) in the proper namespace/project as mentioned above by calling
+
+    ```
+    oc apply -f /projects/dev_demos/demos/05_continue_extension/ollama-deployment.yaml
+    ```
+
+    Note that here a container image from docker.io is pulled. In an air-gapped environment, one needs to pull this image from the container image registry of choice that is available from within the OpenShift cluster.
+
+1) Now download the local LLM "wizardcoder:python" into the Ollama web server by opening a terminal in the OpenShift Dev Spaces workspace and executing
+
+    ```
+    curl -X POST http://ollama:11434/api/pull -d '{"name": "wizardcoder:python"}'"digest
+    ```
+
+    This pull requires the Ollama web server to have an internet connection. In an air-gapped environment, create a new container image where the desired LLMs are inside and use this container image in the ollama-deployment.yaml.
+
+1) Lastly, the local LLM needs to be incorporated into Continue. Thus go to Continue's config.py (`~/.continue/config.py`) and add the Ollama web server as described [here](https://continue.dev/docs/reference/Models/ollama) by adding
+
+    ```python
+    default=Ollama(
+        model="wizardcoder:python",
+        server_url="http://ollama:11434"
+    )
+    ```
+
+    This concludes the steps to incorporate a local LLM into Continue and OpenShift Dev Spaces and yields the personal AI assistant for application development in a private on-prem air-gapped environment that can be used as described on [this page](https://continue.dev/docs/how-to-use-continue).
+
 
 ## Include own documentation in LLM
 
