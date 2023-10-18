@@ -73,7 +73,7 @@ The Ollama web server that provides communication with the local LLMs is deploye
 1) Now download the local LLM "wizardcoder:python" into the Ollama web server by opening a terminal in the OpenShift Dev Spaces workspace and executing
 
     ```
-    curl -X POST http://ollama:11434/api/pull -d '{"name": "wizardcoder:python"}'"digest
+    curl -X POST http://ollama:11434/api/pull -d '{"name": "wizardcoder:python"}'
     ```
 
     This pull requires the Ollama web server to have an internet connection. In an air-gapped environment, create a new container image where the desired LLMs are inside and use this container image in the ollama-deployment.yaml.
