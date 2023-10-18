@@ -10,20 +10,6 @@ spec:
     requests:
       storage: 20Gi
 ---
-# Service ollama
-apiVersion: v1
-kind: Service
-metadata:
-  name: ollama
-spec:
-  selector:
-    app: ollama-app
-  ports:
-    - name: frontend
-      protocol: TCP
-      port: 11434
-      targetPort: frontend
----
 # Deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -73,3 +59,17 @@ spec:
       - name: ollama-data
         persistentVolumeClaim:
           claimName: ollama-data
+---
+# Service ollama
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+spec:
+  selector:
+    app: ollama-app
+  ports:
+    - name: frontend
+      protocol: TCP
+      port: 11434
+      targetPort: frontend
