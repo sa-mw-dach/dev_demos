@@ -95,3 +95,6 @@ The Ollama web server that provides communication with the local LLMs is deploye
 1) ...
 
 
+## Run the local LLM on a GPU-enabled OpenShift cluster
+
+1) ...
