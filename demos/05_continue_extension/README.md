@@ -17,7 +17,7 @@ In order to be able to run the demo, the following requirements need to be fullf
 * Optional when using GPUs: NVIDIA GPU Operator (tested on version 23.6.1) & NFD (tested on version 4.11.0) 
 
 
-## Installation of Continue
+## Installation of Continue in OpenShift Dev Spaces
 Continue(XXX) describes itself as "an open-source autopilot for software development". It is an IDE Extension and brings the power of ChatGPT and other Larga-Language Models (LLM) to VS Code. In this section, Continue is installed in OpenShift Dev Spaces in a way that supports on-prem air-gapped usage.
 
 Please note that the installation of VS code extensions can be automated using devfiles (XXX).
@@ -34,16 +34,21 @@ Basically the instructions for installing Continue in an on-prem air-gapped envi
 
     For experimentation purposes, the Continue server is in the following run locally inside the UDI container. Please note that in a productive developer environment, one would run the Continue server in an automated way in a container attached to one's DevWorkspace or in a shared environment for multiple developers.
 
-    - First go to the Continue VS Code extension settings and select "Manually Running Server". 
+    - First go to the Continue VS Code extension settings and select "Manually Running Server". Then restart the OpenShift Dev Spaces workspace.
 
-    - Then inside the OpenShift Dev Spaces workspace, open a terminal and download the Continue server from PyPI and run it using 
+    - Next, inside the OpenShift Dev Spaces workspace, open a terminal and download the Continue server from PyPI and run it using 
     
         ```
         pip install continuedev
         python -m continuedev
         ```
 
-1) Test Continue, if Internet connection is available, using the GPT4 trial model...
+1) [Optional] Test Continue, if an internet connection is available
+
+    As default, Continue comes with a GPT4 Free Trial model that connects to OpenAI using Continue's API key. Thus Continue is ready to be used, in case an internet connection is available.
+
+    [This page](https://continue.dev/docs/how-to-use-continue) contains information on how to use Continue and can be used to test Continue's capabilities.
+
 
 ## Adapt Continue to use a local LLM
 
