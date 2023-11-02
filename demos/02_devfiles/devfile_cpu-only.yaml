@@ -1,0 +1,16 @@
+schemaVersion: 2.2.0
+metadata:
+  name: test-workspace-cpu-only
+attributes:
+  controller.devfile.io/storage-type: ephemeral
+  pod-overrides:
+    spec:
+      nodeSelector:
+        cpu-only: '1'
+components:
+- name: test-container-cpu-only
+  container:
+    image: quay.io/devfile/universal-developer-image:ubi8-latest
+    memoryLimit: 4Gi
+    mountSources: true
+    sourceMapping: /projects

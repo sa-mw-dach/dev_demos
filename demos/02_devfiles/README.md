@@ -43,3 +43,6 @@ In order to test GPU access from within a Dev Spaces workspace, please find a sa
 When the workspace is started, open a new terminal via Menu-->"Terminal"-->"New Terminal (Select a Container)". Now one can execute `/tmp/sample` to test if the VectorAdd example works. Additionally, by executing `nvidia-smi` some details about the GPU can be displayed.
 
 Please note that in the devfile ([devfile_gpu.yaml](devfile_gpu.yaml)) the resource limits and requests are overwritten in order to contain `nvidia.com/gpu: 1`. This ensures that the workspace pod is provisioned to a node that contains a Nvidia GPU.
+
+## CPU-only workspace
+In case you are runnig OpenShift worker nodes that carry GPUs and some which don't, you can explicitely force workspaces to be deployed to CPU-only worker nodes by using node labels and a node selector in the devfile. This is demonstrated in the following devfile [devfile_cpu-only.yaml](devfile_cpu-only.yaml), where a label `cpu-only: '1'` has been added to the desired CPU-only node(s).
