@@ -18,5 +18,9 @@ In this part, OpenShift Pipelines is demonstrated.
 
 This demo shows some aspects of integrating an AI/ML model into an app using pipelines and a GitOps approach.
 
+## [Demo 05 - Personal AI Assistant for Application Development](demos/05_ai_assistant/README.md)
+
+The 5th demo showcases the installation, configuration and usage of an AI assistant for application development that runs in an air-gapped on-prem environment.
+
 
 [^license_plate_desc]: https://rh-aiservices-bu.github.io/licence-plate-workshop/

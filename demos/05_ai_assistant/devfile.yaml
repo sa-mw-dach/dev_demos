@@ -1,0 +1,31 @@
+schemaVersion: 2.2.0
+metadata:
+  name: udi-ollama
+attributes:
+  controller.devfile.io/storage-type: ephemeral
+components:
+- name: udi
+  container:
+    image: quay.io/devfile/universal-developer-image:ubi8-latest
+    memoryLimit: 4Gi
+    memoryRequest: 2Gi
+    cpuLimit: 4000m
+    cpuRequest: 1000m
+    mountSources: true
+    sourceMapping: /projects
+- name: ollama
+  attributes:
+    container-overrides:
+      resources:
+        limits:
+          cpu: 4000m
+          memory: 24Gi
+          nvidia.com/gpu: 1 # limiting to 1 GPU
+        requests:
+          cpu: 2000m
+          memory: 16Gi
+          nvidia.com/gpu: 1 # requesting 1 GPU
+  container:
+    image: docker.io/ollama/ollama:latest
+    mountSources: true
+    sourceMapping: /.ollama
