@@ -1,14 +1,7 @@
 # Demo 05 - Personal AI Assistant for Application Development
 
 ## Introduction
-- AI Assistent for Application Development
-- OpenShift Dev Spaces
-- Continue
-- Private: on-prem & air-gapped
-- Enriching AI assistent with own information, e.g. company coding guidelines provided as PDF to the model as additional source
-- ...
-
-Note: read blog article!
+A proper introduction for this demo plus a video showcasing the usage of a personal AI assistant for application development can be found [here](https://www.opensourcerers.org/?p=7567).
 
 
 ## Requirements
@@ -17,7 +10,9 @@ In order to be able to run the demo, the following requirements need to be fullf
 * Red Hat OpenShift Dev Spaces (tested on version 3.9)
 * Continue VS Code extension (tested on version 0.1.26)
 * Local LLM Code LLama (with 13 billion parameters) via Ollama
-* Optional when using GPUs: NVIDIA GPU Operator (tested on version 23.6.1) & its dependency, the Node Feature Discovery Operator (tested on version 4.11.0) 
+* Optional when using GPUs:
+    * NVIDIA GPU Operator (tested on version 23.6.1)
+    * Node Feature Discovery Operator (tested on version 4.11.0) 
 
 
 ## Installation of Continue in OpenShift Dev Spaces
@@ -106,4 +101,6 @@ Instead of deploying the Ollama web server directly in OpenShift as described in
 
 `udi`: A container based on the Universal Developer Image as described above, which hosts the Continue server and is used for all other developement tasks as well (like applying terminal commands).
 
-`ollama`: A container based on the [Ollama container image](https://hub.docker.com/r/ollama/ollama) that comprises the Ollama web server and is additonally configured to leverage GPUs by setting `nvidia.com/gpu: 1` in the container's resource request. Due to that configuration in the devfile, the ollama container (and therewith the entire pod) is being deployed on an OpenShift worker node that hosts a GPU, which significantly accelerates the inference step of the local LLM and hence improves the performance of the personal AI assistant for developers.
+`ollama`: A container based on the [Ollama container image](https://hub.docker.com/r/ollama/ollama) that comprises the Ollama web server and is additonally configured to leverage GPUs by setting `nvidia.com/gpu: 1` in the container's resource request. Due to that configuration in the devfile, the ollama container (and therewith the entire pod) is being deployed on an OpenShift worker node that hosts a GPU, which significantly accelerates the inference step of the local LLM and hence tremendously improves the performance of the personal AI assistant for developers.
+
+Please note that when running the Ollama web server directly withing a workspace using the [devfile.yaml](devfile.yaml), the basic installation and configuration steps as described in the other paragraphs of this page remain the same, despite that the resources defined in `ollama-deplyoment.yaml` (see previous paragrah) don't need to be deployed to OpenShift separately.
