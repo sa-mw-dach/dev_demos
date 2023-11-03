@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: model-pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: IMAGE_TAG
+      type: string
+  tasks:
+    - name: fetch-repository
+      params:
+        - name: url
+          value: 'https://github.com/sa-mw-dach/dev_demos.git'
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: deleteExisting
+          value: 'true'
+        - name: verbose
+          value: 'true'
+        - name: revision
+          value: main
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+    - name: build-push-image
+      params:
+        - name: IMAGE
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/gitops-demo/licenseplate
+        - name: DOCKERFILE
+          value: ./demos/04_license_plate_gitops/a_model/pipeline/Containerfile
+        - name: CONTEXT
+          value: ./
+      runAfter:
+        - fetch-repository
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: tag-image
+      params:
+        - name: SCRIPT
+          value: oc tag licenseplate@$(tasks.build-push-image.results.IMAGE_DIGEST) licenseplate:$(params.IMAGE_TAG)
+      runAfter:
+        - build-push-image
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: shared-workspace

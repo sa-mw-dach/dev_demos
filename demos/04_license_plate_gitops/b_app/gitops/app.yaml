@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-licenseplate
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: gitops-demo
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    directory:
+      recurse: true
+    path: demos/04_license_plate_gitops/b_app/manifests
+    repoURL: https://github.com/sa-mw-dach/dev_demos.git
+    targetRevision: main
+  ignoreDifferences:
+    - group: apps
+      jsonPointers:
+        - /spec/template/spec/containers
+      kind: Deployment
+      name: application
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

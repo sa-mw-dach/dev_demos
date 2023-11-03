@@ -1,0 +1,26 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: "application-build" 
+spec:
+  runPolicy: "Serial" 
+  triggers: 
+    -
+      type: "ImageChange"
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/sa-mw-dach/dev_demos.git'
+      ref: main
+    contextDir: /demos/04_license_plate_gitops/b_app/src
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: 'python:3.8-ubi8'
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'application:latest'
