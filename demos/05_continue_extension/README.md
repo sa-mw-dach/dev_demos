@@ -99,6 +99,10 @@ The Ollama web server that provides communication with the local LLMs is deploye
     This concludes the steps to incorporate a local LLM into Continue and OpenShift Dev Spaces and yields the personal AI assistant for application development in a private on-prem air-gapped environment that can be used as described on [this page](https://continue.dev/docs/how-to-use-continue).
 
 
+## Alternative: Use local LLM directly within OpenShift Dev Spaces leveraging GPUs
+Text for using the devfile.yaml...
+
+
 ## Include own documentation in LLM
 
 1) ...
