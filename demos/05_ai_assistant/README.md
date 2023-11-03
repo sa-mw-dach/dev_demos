@@ -63,7 +63,7 @@ The Ollama web server that provides communication with the local LLMs is deploye
 1) Deploy the resources for the Ollama web server (i.e. a PVC for the Ollama data, a deployment comprising the Ollama web server in a container as well as a service that provides access to the web server) in the proper namespace/project as mentioned above by calling
 
     ```
-    oc apply -f /projects/dev_demos/demos/05_continue_extension/ollama-deployment.yaml
+    oc apply -f /projects/dev_demos/demos/05_ai_assistant/ollama-deployment.yaml
     ```
 
     Note that here a container image from docker.io is pulled. In an air-gapped environment, one needs to pull this image from the container image registry of choice that is available from within the OpenShift cluster.
