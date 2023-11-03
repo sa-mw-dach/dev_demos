@@ -1,11 +1,12 @@
 # Demo 05 - Personal AI Assistant for Application Development
 
 ## Introduction
-A proper introduction for this demo plus a video showcasing the usage of a personal AI assistant for application development can be found [here](https://www.opensourcerers.org/?p=7567).
+A proper introduction for this demo plus a video showcasing the usage of a personal AI assistant for application development that doesn't phone home can be found [here](https://www.opensourcerers.org/?p=7567).
 
 
 ## Requirements
-In order to be able to run the demo, the following requirements need to be fullfilled:
+In order to be able to run the demo, the following software components need to be available and will be installed/configured in the following paragraphs:
+
 * Red Hat OpenShift (tested on version 4.11.50)
 * Red Hat OpenShift Dev Spaces (tested on version 3.9)
 * Continue VS Code extension (tested on version 0.1.26)
@@ -73,7 +74,7 @@ The Ollama web server that provides communication with the local LLMs is deploye
     curl -X POST http://ollama:11434/api/pull -d '{"name": "codellama:13b"}'
     ```
 
-    This pull requires the Ollama web server to have an internet connection. In an air-gapped environment, create a new container image where the desired LLMs are inside and use this container image in the ollama-deployment.yaml.
+    This pull requires the Ollama web server to have an internet connection. In an air-gapped environment, create a new container image where the desired LLMs are inside and use this container image in the `ollama-deployment.yaml`.
 
 1) Lastly, the local LLM needs to be incorporated into Continue. Thus go to Continue's config.py (`~/.continue/config.py`) and add the Ollama web server as described [here](https://continue.dev/docs/reference/Models/ollama) by adding
 
@@ -92,6 +93,8 @@ The Ollama web server that provides communication with the local LLMs is deploye
         )
     )
     ```
+
+    An example of an entire `~/.continue/config.py` file can be found [here](config.py).
 
     This concludes the steps to incorporate a local LLM into Continue and OpenShift Dev Spaces and yields the personal AI assistant for application development in a private on-prem air-gapped environment that can be used as described on [this page](https://continue.dev/docs/how-to-use-continue).
 

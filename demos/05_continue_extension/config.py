@@ -27,7 +27,8 @@ config = ContinueConfig(
     allow_anonymous_telemetry=False,
     models=Models(
 		default=Ollama(
-			model="codellama:13b"
+			model="codellama:13b",
+            server_url="http://ollama:11434"
 		)
 	),
     system_message=None,
