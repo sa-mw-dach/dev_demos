@@ -72,4 +72,4 @@ spec:
     - name: frontend
       protocol: TCP
       port: 11434
-      targetPort: frontend
+      targetPort: 11434
