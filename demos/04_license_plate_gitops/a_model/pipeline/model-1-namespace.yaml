@@ -1,6 +1,6 @@
 kind: Project
 apiVersion: project.openshift.io/v1
 metadata:
-  name: gitops-demo
+  name: oc project gitops-demo-demo
   labels:
     argocd.argoproj.io/managed-by: openshift-gitops
