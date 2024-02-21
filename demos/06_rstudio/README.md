@@ -36,7 +36,7 @@ Sys.setenv("AWS_ACCESS_KEY_ID" = "YOUR_ACCESS_KEY_ID",
            "AWS_DEFAULT_REGION" = "YOUR_DEFAULT_REGION",
            "AWS_S3_ENDPOINT" = "YOUR_S3_ENDPOINT")
 
-# Including library to read S3 buckets
+# Including library to read S3 buckets (https://github.com/cloudyr/aws.s3)
 library("aws.s3")
 
 # Get listing of all object inside a bucket
