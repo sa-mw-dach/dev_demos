@@ -51,3 +51,33 @@ put_object(file = "test_file.txt", object = "test_file", bucket = "mybucket", re
 # NOTE: Setting region as '' is a quick hack needed due to not using AWS S3, but minio
 save_object("test_file", file = "test_file.txt", bucket = "mybucket", region = '')
 ```
+
+
+Example to list buckets from VS Code:
+```python
+# Include AWS boto3 library and os
+import boto3
+import os
+
+# Create connection to local object storage
+s3_client = boto3.client(
+    service_name='s3',
+    endpoint_url=os.environ['AWS_S3_ENDPOINT']
+)
+
+# Obtain buckets
+response = s3_client.list_buckets()
+
+# Output bucket names
+print('Existing buckets:')
+for bucket in response['Buckets']:
+    print(f'  {bucket["Name"]}')
+```
+
+
+
+# S3 Browser
+Simple S3 browser from https://github.com/cloudlena/s3manager.
+
+
+Important: Endpoint without `https://`! Set properly in secret!

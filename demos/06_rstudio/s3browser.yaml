@@ -1,0 +1,90 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3browser
+spec:
+  selector:
+    matchLabels:
+      app: s3browser
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: s3browser
+    spec:
+      containers:
+        - name: s3browser
+          image: docker.io/cloudlena/s3manager:latest
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+            drop:
+              - ALL
+          env:
+            - name: REGION
+              valueFrom:
+                secretKeyRef:
+                  name: aws-connection-minio
+                  key: AWS_DEFAULT_REGION
+            - name: ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-connection-minio
+                  key: AWS_ACCESS_KEY_ID
+            - name: SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-connection-minio
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: aws-connection-minio
+                  key: AWS_S3_ENDPOINT
+            # - name: SKIP_SSL_VERIFICATION
+            #   value: 'true'
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  paused: false
+
+---
+
+# Service
+kind: Service
+apiVersion: v1
+metadata:
+  name: s3browser-service
+spec:
+  ports:
+    - name: 8080-tcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+  selector:
+    app: s3browser
+
+---
+
+# Route
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: s3browser-route
+  labels: {}
+spec:
+  to:
+    kind: Service
+    name: s3browser-service
+  port:
+    targetPort: 8080-tcp
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+    destinationCACertificate: ''
