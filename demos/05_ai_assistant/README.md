@@ -56,6 +56,8 @@ The Ollama web server that provides communication with the local LLMs is deploye
 
     Note that here a container image from docker.io is pulled. In an air-gapped environment, one needs to pull this image from the container image registry of choice that is available from within the OpenShift cluster.
 
+    If the pod cannot be rolled out, please check the logs of the corresponding ReplicaSet. It may be that your namespace has a LimitRange configured with a maximum cpu or memory usage that is too low.
+
 1) Now download the local LLM "codellama:13b" into the Ollama web server by opening a terminal in the OpenShift Dev Spaces workspace and executing
 
     ```
@@ -64,25 +66,22 @@ The Ollama web server that provides communication with the local LLMs is deploye
 
     This pull requires the Ollama web server to have an internet connection. In an air-gapped environment, create a new container image where the desired LLMs are inside and use this container image in the `ollama-deployment.yaml`.
 
-1) Lastly, the local LLM needs to be incorporated into Continue. Thus go to Continue's config.py (`~/.continue/config.py`) and add the Ollama web server as described [here](https://continue.dev/docs/reference/Models/ollama) by adding
+1) Lastly, the local LLM needs to be incorporated into Continue. Thus go to Continue's config.json (`~/.continue/config.json`) and add the Ollama web server as described [here](https://continue.dev/docs/reference/Model%20Providers/ollama) by adding
 
-    ```python
-    from continuedev.libs.llm.ollama import Ollama
-
-    ...
-
-    config = ContinueConfig(
+    ```yaml
+    {
+    "models": [
         ...
-        models=Models(
-            default=Ollama(
-                model="codellama:13b",
-                server_url="http://ollama:11434"
-            )
-        )
-    )
+        {
+        "title": "CodeLlama-13b",
+        "model": "codellama:13b",
+        "apiBase": "http://ollama:11434",
+        "provider": "ollama"
+        }
+    ],
+    ...
+    }
     ```
-
-    An example of an entire `~/.continue/config.py` file can be found [here](config.py).
 
     This concludes the steps to incorporate a local LLM into Continue and OpenShift Dev Spaces and yields the personal AI assistant for application development in a private on-prem air-gapped environment that can be used as described on [this page](https://continue.dev/docs/how-to-use-continue).
 
