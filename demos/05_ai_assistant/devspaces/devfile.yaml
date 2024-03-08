@@ -34,6 +34,11 @@ commands:
     exec:
       component: ollama
       commandLine: "ollama pull codellama:13b"
+  - id: copyconfig
+    exec:
+      component: udi
+      commandLine: "mkdir /home/user/.continue && cp /projects/YOUR_REPO_NAME/continue-config.json /home/user/.continue/config.json"
 events:
   postStart:
     - pullmodel
+    - copyconfig

@@ -87,10 +87,15 @@ The Ollama web server that provides communication with the local LLMs is deploye
 
 
 ## Alternative: Use local LLM directly within OpenShift Dev Spaces
-Instead of deploying the Ollama web server directly in OpenShift as described in the previous paragraph, it can also be deployed in the OpenShift Dev Spaces workspace. By using the devfile provided [here](devfile.yaml) for creating a new workspace, the following two conatiners are being started:
+Instead of deploying the Ollama web server directly in OpenShift as described in the previous paragraph, it can also be deployed, along with the Continue extension itself, easily and conveniently in an OpenShift Dev Spaces workspace. 
 
-`udi`: A container based on the Universal Developer Image as described above, which hosts the Continue server and is used for all other developement tasks as well (like applying terminal commands).
+1) Copy the content of the `devspaces` folder into the root folder of a git repository of your choice.
+1) Adapt the [devfile](devspaces/devfile.yaml) in your own git repo to point to the proper location of the continue-config.json: `/projects/YOUR_REPO_NAME/continue-config.json`.
 
-`ollama`: A container based on the [Ollama container image](https://hub.docker.com/r/ollama/ollama) that comprises the Ollama web server and is additonally configured to leverage GPUs by setting `nvidia.com/gpu: 1` in the container's resource request. Due to that configuration in the devfile, the ollama container (and therewith the entire pod) is being deployed on an OpenShift worker node that hosts a GPU, which significantly accelerates the inference step of the local LLM and hence tremendously improves the performance of the personal AI assistant for developers.
+By using the devfile in your own git repo for creating a new workspace, the Continue extension is automatically installed and configured upon start of the workspace and the following two containers are being included:
 
-Please note that when running the Ollama web server directly withing a workspace using the [devfile.yaml](devfile.yaml), the basic installation and configuration steps as described in the other paragraphs of this page remain the same, despite that the resources defined in `ollama-deplyoment.yaml` (see previous paragrah) don't need to be deployed to OpenShift separately.
+`udi`: A container based on the Universal Developer Image as described above, which is used for all developement tasks (like applying terminal commands).
+
+`ollama`: A container based on the [Ollama container image](https://hub.docker.com/r/ollama/ollama) that comprises the Ollama web server and is additonally configured to leverage GPUs by setting `nvidia.com/gpu: 1` in the container's resource request. Due to that configuration in the devfile, the ollama container is being deployed within the workspace pod on the OpenShift cluster that hosts a GPU, which significantly accelerates the inference step of the local LLM and hence tremendously improves the performance of the personal AI assistant for developers. Also, the codellama-13b model is being pulled automatically and can be immediately used from within Continue.
+
+Note that running a LLM in your own OpenShift cluster is mostly only fun, if you are using a GPU. If no GPU is available, please refer to LLMs with lower resource requirements (see [here](https://github.com/jmorganca/ollama#model-library)).
