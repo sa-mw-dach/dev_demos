@@ -7,12 +7,12 @@ A proper introduction for this demo plus a video showcasing the usage of a perso
 ## Requirements
 In order to be able to run the demo, the following software components need to be available and will be installed/configured in the following paragraphs:
 
-* Red Hat OpenShift (tested on version 4.11.50)
-* Red Hat OpenShift Dev Spaces (tested on version 3.9)
-* Continue VS Code extension (tested on version 0.1.26)
+* Red Hat OpenShift (tested on version 4.11.57)
+* Red Hat OpenShift Dev Spaces (tested on version 3.10.1)
+* Continue VS Code extension (tested on version 0.9.79)
 * Local LLM Code LLama (with 13 billion parameters) via Ollama
 * Optional when using GPUs:
-    * NVIDIA GPU Operator (tested on version 23.6.1)
+    * NVIDIA GPU Operator (tested on version 23.9.1)
     * Node Feature Discovery Operator (tested on version 4.11.0) 
 
 
@@ -29,21 +29,9 @@ Basically the instructions for installing Continue in an on-prem air-gapped envi
 
 1) In OpenShift Dev Spaces, go to the extensions menu at the left, click on the three dots at the top of the "Extensions" page and select "Install from VSIX". Now select the previously downloaded Continue VSIX file (e.g. `Continue.continue-0.1.26@linux-x64.vsix`) and hit "ok".
 
-1) Since the AI assistent shall run in an air-gapped environment, a "Continue Server" needs to be run locally. 
-
-    For experimentation purposes, the Continue server is in the following run locally inside the UDI container. Please note that in a productive developer environment, one would run the Continue server in an automated way for example in a container attached to one's workspace.
-
-    - First go to the Continue VS Code extension settings and select "Manually Running Server". Then restart the OpenShift Dev Spaces workspace.
-
-    - Next, inside the OpenShift Dev Spaces workspace, open a terminal and then download the Continue server (with version 0.1.73 that fits to the Continue extension version 0.1.26) from PyPI and run it using 
-        ```
-        pip install continuedev==0.1.73
-        python -m continuedev
-        ```
-
 1) [Optional] Test Continue, if an internet connection is available.
 
-    As default, Continue comes with a GPT4 Free Trial model that connects to OpenAI using Continue's API key. Thus Continue is ready to be used, in case an internet connection is available.
+    As default, Continue comes with free trial models, such as GPT-4 Vision, GPT-3.5-Turbo, Gemini Pro and Codellama 70b, that connect to the vendor's model server using Continue's API key. Thus Continue is ready to be used, in case an internet connection is available.
 
     [This page](https://continue.dev/docs/how-to-use-continue) contains information on how to use Continue and can be used to test Continue's capabilities.
 
@@ -52,7 +40,7 @@ Basically the instructions for installing Continue in an on-prem air-gapped envi
 
 Since the ultimate goal of this demo is to have a personal AI assistant for application development in a private on-prem air-gapped environment, the next step is to use a local LLM within Continue.
 
-When looking into the [documentation](https://continue.dev/docs/customization/models), multiple local models can be used with Continue. For the demo at hand, the Ollama framework is used as interface to Continue, which is able to run the local LLMs as described [here](https://github.com/jmorganca/ollama#model-library) and [here](https://ollama.ai/library). 
+When looking into the [documentation](https://continue.dev/docs/model-setup/select-model), multiple local models can be used with Continue. For the demo at hand, the Ollama framework is used as interface to Continue, which is able to run the local LLMs as described [here](https://github.com/jmorganca/ollama#model-library) and [here](https://ollama.ai/library). 
 
 The Ollama web server that provides communication with the local LLMs is deployed in OpenShift as follows:
 
@@ -68,6 +56,8 @@ The Ollama web server that provides communication with the local LLMs is deploye
 
     Note that here a container image from docker.io is pulled. In an air-gapped environment, one needs to pull this image from the container image registry of choice that is available from within the OpenShift cluster.
 
+    If the pod cannot be rolled out, please check the logs of the corresponding ReplicaSet. It may be that your namespace has a LimitRange configured with a maximum cpu or memory usage that is too low.
+
 1) Now download the local LLM "codellama:13b" into the Ollama web server by opening a terminal in the OpenShift Dev Spaces workspace and executing
 
     ```
@@ -76,34 +66,36 @@ The Ollama web server that provides communication with the local LLMs is deploye
 
     This pull requires the Ollama web server to have an internet connection. In an air-gapped environment, create a new container image where the desired LLMs are inside and use this container image in the `ollama-deployment.yaml`.
 
-1) Lastly, the local LLM needs to be incorporated into Continue. Thus go to Continue's config.py (`~/.continue/config.py`) and add the Ollama web server as described [here](https://continue.dev/docs/reference/Models/ollama) by adding
+1) Lastly, the local LLM needs to be incorporated into Continue. Thus go to Continue's config.json (`~/.continue/config.json`) and add the Ollama web server as described [here](https://continue.dev/docs/reference/Model%20Providers/ollama) by adding
 
-    ```python
-    from continuedev.libs.llm.ollama import Ollama
-
-    ...
-
-    config = ContinueConfig(
+    ```yaml
+    {
+    "models": [
         ...
-        models=Models(
-            default=Ollama(
-                model="codellama:13b",
-                server_url="http://ollama:11434"
-            )
-        )
-    )
+        {
+        "title": "CodeLlama-13b",
+        "model": "codellama:13b",
+        "apiBase": "http://ollama:11434",
+        "provider": "ollama"
+        }
+    ],
+    ...
+    }
     ```
-
-    An example of an entire `~/.continue/config.py` file can be found [here](config.py).
 
     This concludes the steps to incorporate a local LLM into Continue and OpenShift Dev Spaces and yields the personal AI assistant for application development in a private on-prem air-gapped environment that can be used as described on [this page](https://continue.dev/docs/how-to-use-continue).
 
 
 ## Alternative: Use local LLM directly within OpenShift Dev Spaces
-Instead of deploying the Ollama web server directly in OpenShift as described in the previous paragraph, it can also be deployed in the OpenShift Dev Spaces workspace. By using the devfile provided [here](devfile.yaml) for creating a new workspace, the following two conatiners are being started:
+Instead of deploying the Ollama web server directly in OpenShift as described in the previous paragraph, it can also be deployed, along with the Continue extension itself, easily and conveniently in an OpenShift Dev Spaces workspace. 
 
-`udi`: A container based on the Universal Developer Image as described above, which hosts the Continue server and is used for all other developement tasks as well (like applying terminal commands).
+1) Copy the content of the `devspaces` folder into the root folder of a git repository of your choice.
+1) Adapt the [devfile](devspaces/devfile.yaml) in your own git repo to point to the proper location of the continue-config.json: `/projects/YOUR_REPO_NAME/continue-config.json`.
 
-`ollama`: A container based on the [Ollama container image](https://hub.docker.com/r/ollama/ollama) that comprises the Ollama web server and is additonally configured to leverage GPUs by setting `nvidia.com/gpu: 1` in the container's resource request. Due to that configuration in the devfile, the ollama container (and therewith the entire pod) is being deployed on an OpenShift worker node that hosts a GPU, which significantly accelerates the inference step of the local LLM and hence tremendously improves the performance of the personal AI assistant for developers.
+By using the devfile in your own git repo for creating a new workspace, the Continue extension is automatically installed and configured upon start of the workspace and the following two containers are being included:
 
-Please note that when running the Ollama web server directly withing a workspace using the [devfile.yaml](devfile.yaml), the basic installation and configuration steps as described in the other paragraphs of this page remain the same, despite that the resources defined in `ollama-deplyoment.yaml` (see previous paragrah) don't need to be deployed to OpenShift separately.
+`udi`: A container based on the Universal Developer Image as described above, which is used for all developement tasks (like applying terminal commands).
+
+`ollama`: A container based on the [Ollama container image](https://hub.docker.com/r/ollama/ollama) that comprises the Ollama web server and is additonally configured to leverage GPUs by setting `nvidia.com/gpu: 1` in the container's resource request. Due to that configuration in the devfile, the ollama container is being deployed within the workspace pod on the OpenShift cluster that hosts a GPU, which significantly accelerates the inference step of the local LLM and hence tremendously improves the performance of the personal AI assistant for developers. Also, the codellama-13b model is being pulled automatically and can be immediately used from within Continue.
+
+Note that running a LLM in your own OpenShift cluster is mostly only fun, if you are using a GPU. If no GPU is available, please refer to LLMs with lower resource requirements (see [here](https://github.com/jmorganca/ollama#model-library)).

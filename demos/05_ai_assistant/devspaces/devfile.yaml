@@ -19,13 +19,26 @@ components:
       resources:
         limits:
           cpu: 4000m
-          memory: 24Gi
+          memory: 16Gi
           nvidia.com/gpu: 1 # limiting to 1 GPU
         requests:
-          cpu: 2000m
-          memory: 16Gi
+          cpu: 1000m
+          memory: 8Gi
           nvidia.com/gpu: 1 # requesting 1 GPU
   container:
     image: docker.io/ollama/ollama:latest
     mountSources: true
     sourceMapping: /.ollama
+commands:
+  - id: pullmodel
+    exec:
+      component: ollama
+      commandLine: "ollama pull codellama:13b"
+  - id: copyconfig
+    exec:
+      component: udi
+      commandLine: "mkdir /home/user/.continue && cp /projects/YOUR_REPO_NAME/continue-config.json /home/user/.continue/config.json"
+events:
+  postStart:
+    - pullmodel
+    - copyconfig
