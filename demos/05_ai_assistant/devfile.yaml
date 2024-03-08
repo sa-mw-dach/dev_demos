@@ -29,3 +29,11 @@ components:
     image: docker.io/ollama/ollama:latest
     mountSources: true
     sourceMapping: /.ollama
+commands:
+  - id: pullmodel
+    exec:
+      component: ollama
+      commandLine: "ollama pull codellama:13b"
+events:
+  postStart:
+    - pullmodel
