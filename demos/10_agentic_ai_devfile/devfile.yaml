@@ -43,11 +43,11 @@ components:
           limits:
             cpu: 4000m
             memory: 16Gi
-            nvidia.com/gpu: 1 # limiting to 1 GPU
+            # nvidia.com/gpu: 1 # limiting to 1 GPU
           requests:
             cpu: 1000m
             memory: 8Gi
-            nvidia.com/gpu: 1 # requesting 1 GPU
+            # nvidia.com/gpu: 1 # requesting 1 GPU
     container:
       image: docker.io/ollama/ollama:latest
       mountSources: true
