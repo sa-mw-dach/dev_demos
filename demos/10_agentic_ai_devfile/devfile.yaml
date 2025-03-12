@@ -34,7 +34,7 @@ commands:
   - id: switchjavaversion
     exec:
       component: udi
-      commandLine: "sdk install java 21.0.2-open"
+      commandLine: "source $HOME/.bashrc && sdk install java 21.0.2-open"
       workingDir: "/projects"
 events:
   postStart:
