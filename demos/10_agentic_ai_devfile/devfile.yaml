@@ -30,12 +30,31 @@ components:
       cpuLimit: 4000m
       mountSources: true
       sourceMapping: /projects
+  - name: ollama
+    attributes:
+      container-overrides:
+        resources:
+          limits:
+            cpu: 4000m
+            memory: 16Gi
+            nvidia.com/gpu: 1 # limiting to 1 GPU
+          requests:
+            cpu: 1000m
+            memory: 8Gi
+            nvidia.com/gpu: 1 # requesting 1 GPU
+    container:
+      image: docker.io/ollama/ollama:latest
+      mountSources: true
+      sourceMapping: /.ollama
 commands:
   - id: switchjavaversion
     exec:
       component: udi
       commandLine: "source $HOME/.bashrc && sdk install java 21.0.2-open"
-      workingDir: "/projects"
+  - id: run-chatbot
+    exec:
+      component: udi
+      commandLine: "./mvnw compile quarkus:dev"
 events:
   postStart:
     - switchjavaversion
