@@ -21,6 +21,9 @@ projects:
       checkoutFrom:
         revision: bugfix/refund
 components:
+  - name: storageollama
+    volume:
+      size: 10Gi
   - name: udi
     container:
       image: quay.io/devfile/universal-developer-image:ubi8-latest
@@ -30,6 +33,9 @@ components:
       cpuLimit: 4000m
       mountSources: true
       sourceMapping: /projects
+      volumeMounts:
+        - name: storageollama
+          path: /.ollama
   - name: ollama
     attributes:
       container-overrides:
