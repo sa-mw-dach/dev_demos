@@ -29,11 +29,12 @@ components:
       cpuRequest: 1000m
       cpuLimit: 4000m
       mountSources: true
+      sourceMapping: /projects
 commands:
-  - id: switchtojava21
+  - id: switchjavaversion
     exec:
       component: udi
       commandLine: "sdk install java 21.0.2-open"
-# events:
-#   postStart:
-#     - switchtojava21
+events:
+  postStart:
+    - switchjavaversion
