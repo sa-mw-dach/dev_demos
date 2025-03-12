@@ -51,7 +51,7 @@ commands:
     exec:
       component: udi
       commandLine: "source $HOME/.bashrc && sdk install java 21.0.2-open"
-  - id: run-chatbot
+  - id: runchatbot
     exec:
       component: udi
       commandLine: "./mvnw compile quarkus:dev"
