@@ -41,7 +41,7 @@ components:
       container-overrides:
         resources:
           limits:
-            cpu: 4000m
+            cpu: 8000m
             memory: 16Gi
             # nvidia.com/gpu: 1 # limiting to 1 GPU
           requests:
