@@ -1,0 +1,77 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-deployment
+spec:
+  params:
+    - default: gitlab-gitlab.apps.cluster-jh82x.sandbox1737.opentlc.com
+      description: The hostname of the git instance
+      name: git-host
+      type: string
+    - default: development
+      description: The owner of the repo
+      name: git-owner
+      type: string
+    - default: my-quarkus-app
+      description: The name of the component
+      name: component-id
+      type: string
+    - default: common-password-secret
+      description: Common password used in demo
+      name: common-password-secret
+      type: string
+    - description: Namespace
+      name: namespace
+      type: string
+    - description: Newest image tag
+      name: image-tag
+      type: string
+    - default: argocd-server-janus-argocd.apps.cluster-jh82x.sandbox1737.opentlc.com
+      description: ArgoCD host
+      name: argocd-host
+      type: string
+  steps:
+  - script: |
+      git config --global user.email "root@demo.redhat.com"
+
+      git config --global user.name "Administrator"
+
+      git clone https://root:$COMMON_PASSWORD@$(params.git-host)/$(params.git-owner)/$(params.component-id)-gitops
+
+      cd $(params.component-id)-gitops
+
+      NAMESPACE=$(params.namespace)
+
+      ENVIRON=$(echo $NAMESPACE | grep -i '\-preprod' > /dev/null && echo preprod || echo prod)
+
+      FILE=$(params.component-id)-argocd-app-$ENVIRON.yaml
+
+      sed -i "22s/.*/        value: '$(params.image-tag)'/" argocd/$FILE
+
+      git add .
+
+      git commit -m "Commit image tag $(params.image-tag) to $ENVIRON"
+
+      git push
+    image: 'alpine/git:latest'
+    name: patch
+    env:
+    - name: COMMON_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: $(params.common-password-secret)
+  - script: |
+      argocd login --grpc-web --username admin  --password $COMMON_PASSWORD $(params.argocd-host)
+
+      argocd app terminate-op $(params.component-id)-bootstrap > /dev/null 2>&1 || echo ''
+      argocd app sync --async $(params.component-id)-bootstrap
+    image: 'quay.io/redhat-gpte/argocd-cli:v2.8.4'
+    name: sync
+    onError: continue
+    env:
+    - name: COMMON_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: $(params.common-password-secret)

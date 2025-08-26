@@ -1,0 +1,22 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: tag-binding-prod
+spec:
+  params:
+    - name: git-repo-url
+      value: $(body.project.git_http_url)
+    - name: git-revision
+      value: $(body.commit.id)
+    - name: source-tag
+      value: $(body.tag)
+{{- if ne .Values.image.registry "Quay" }}
+    - name: source-image
+      value: {{ include "image.preprod-url" . }}
+    - name: destination-image
+      value: {{ include "image.prod-url" . }}
+{{- end }}
+    - name: destination-tag
+      value: prod-$(body.tag)
+    - name: namespace
+      value: {{ .Values.app.name }}-prod

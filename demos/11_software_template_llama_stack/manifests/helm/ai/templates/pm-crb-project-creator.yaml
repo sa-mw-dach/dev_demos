@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: project-creator-binding-{{ .Values.app.name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+subjects:
+- kind: ServiceAccount
+  name: project-creator
+  namespace: {{ .Values.app.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin

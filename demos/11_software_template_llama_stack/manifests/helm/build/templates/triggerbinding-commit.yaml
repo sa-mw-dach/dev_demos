@@ -1,0 +1,12 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: commit-binding
+spec:
+  params:
+    - name: git-repo-url
+      value: $(body.repository.git_http_url)
+    - name: git-revision
+      value: $(body.after)
+    - name: git-committer
+      value: $(body.user_email)

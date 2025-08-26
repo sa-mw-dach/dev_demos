@@ -1,0 +1,140 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: acs-deploy-check
+  annotations:
+    task.results.format: application/json
+    task.results.type: roxctl-deployment-check
+    task.output.location: logs
+    task.results.container: step-report
+spec:
+  description: >-
+    Policy check a deployment with StackRox/RHACS This tasks allows you to check
+    a deployment against build-time policies and apply enforcement to fail
+    builds. It's a companion to the stackrox-image-scan task, which returns full
+    vulnerability scan results for an image.
+  params:
+    - description: |
+        Secret containing the address:port tuple for StackRox Central)
+        (example - rox.stackrox.io:443)
+      name: rox_central_endpoint
+      type: string
+      default: central-stackrox.apps.cluster-7l8hh.sandbox3007.opentlc.com:443
+    - description: Secret containing the StackRox API token with CI permissions
+      name: rox_api_token
+      type: string
+      default: my-quarkus-app-stackrox-token
+    - default: >-
+        gitlab-gitlab.apps.cluster-7l8hh.sandbox3007.opentlc.com
+      name: git_host
+      type: string
+    - default: >-
+        development
+      name: git_owner
+      type: string
+    - default: my-quarkus-app
+      description: The name of the component
+      name: component_id
+      type: string
+    - default: common-password-secret
+      name: common_password_secret
+      type: string
+    - default: master
+      name: git_repository_revision
+      type: string
+    - default: 'true'
+      name: verbose
+      type: string
+    - default: 'false'
+      description: |
+        When set to `"true"`, skip verifying the TLS certs of the Central
+        endpoint.  Defaults to `"false"`.
+      name: insecure-skip-tls-verify
+      type: string
+  results:
+    - description: Output of `roxctl deployment check`
+      name: check_output
+  steps:
+    - image: 'quay.io/redhat-gpte/alpine-git:latest'
+      env:
+      - name: COMMON_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: password
+            name: $(params.common_password_secret)
+      name: git-checkout
+      resources: {}
+      script: |
+        #!/usr/bin/env sh
+
+        set -eu -o pipefail
+
+        if [[ "$(params.verbose)" == "true" ]] ; then
+          set -x
+          echo "**** Cloning https://root:$COMMON_PASSWORD@$(params.git_host)/$(params.git_owner)/$(params.component_id)-gitops into $(pwd)/repository"
+        fi
+
+        git clone "https://root:$COMMON_PASSWORD@$(params.git_host)/$(params.git_owner)/$(params.component_id)-gitops" $(pwd)/repository
+        cd repository
+        git checkout "$(params.git_repository_revision)"
+      volumeMounts:
+        - mountPath: /workspace/repository
+          name: repository
+      workingDir: /workspace
+    - image: alpine/helm:3.11.1
+      name: helm-template
+      resources: {}
+      script: |
+        #!/usr/bin/env sh
+
+        set -eu -o pipefail
+
+        cd repository/helm/app
+
+        helm template --dry-run . | awk -vout=out -F": " '$0~/^# Source: /{file=out"/"$2; print "Creating "file; system ("mkdir -p $(dirname "file"); echo -n "" > "file)} $0!~/^#/ && $0!="---"{print $0 >> file}'
+      volumeMounts:
+        - mountPath: /workspace/repository
+          name: repository
+      workingDir: /workspace
+    - env:
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: rox_api_token
+              name: $(params.rox_api_token)
+      image: 'registry.access.redhat.com/ubi8:8.7-1026'
+      name: rox-deploy-scan
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+
+        set +x
+
+        cd /workspace/repository/helm/app/out/quarkus-template/templates
+
+        curl -s -k -L -H "Authorization: Bearer $ROX_API_TOKEN" \
+          "https://$(params.rox_central_endpoint)/api/cli/download/roxctl-linux" \
+          --output ./roxctl  \
+          > /dev/null
+
+        chmod +x ./roxctl  > /dev/null
+
+        ./roxctl deployment check \
+         $( [ "$(params.insecure-skip-tls-verify)" = "true" ] && \
+         echo -n "--insecure-skip-tls-verify") \
+         -e "$(params.rox_central_endpoint)" --file "deployment.yaml" --output json > roxctl_deployment_check.json
+        cat roxctl_deployment_check.json >  $(workspaces.reports.path)/deployment-check
+      volumeMounts:
+        - mountPath: /workspace/repository
+          name: repository
+      workingDir: /workspace/repository
+    - image: 'quay.io/lrangine/crda-maven:11.0'
+      name: report
+      script: |
+          #!/bin/sh
+          cat $(workspaces.reports.path)/deployment-check
+  workspaces:
+    - name: reports
+  volumes:
+    - emptyDir: {}
+      name: repository

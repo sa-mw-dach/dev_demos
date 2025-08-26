@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: rekor-signed-provenance
+spec:
+  params:
+    - name: imageDigest
+      type: string
+    - name: rekorUrl
+      type: string
+      default: https://rekor.sigstore.dev
+  steps:
+    - image: quay.io/redhat-gpte/rekor-cli
+      name: rekor-uuid-from-sha
+      script: >
+        UUID=$(rekor-cli search --sha $(params.imageDigest) --rekor_server $(params.rekorUrl))
+
+        rekor-cli get --uuid $UUID --format json --rekor_server $(params.rekorUrl) > /workspace/rekor.get
+    - image: quay.io/redhat-gpte/jq
+      name: pretty-print-attestation
+      script: >
+        set -x
+
+        cat /workspace/rekor.get | jq -r .

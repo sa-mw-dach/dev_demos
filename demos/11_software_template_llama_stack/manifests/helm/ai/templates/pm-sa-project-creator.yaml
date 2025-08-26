@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: project-creator
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'

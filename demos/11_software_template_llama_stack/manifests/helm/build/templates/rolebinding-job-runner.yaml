@@ -1,0 +1,12 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ .Values.app.name }}-jobrunner-edit
+subjects:
+  - kind: ServiceAccount
+    name: job-runner
+    namespace: {{ .Values.app.name }}-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit

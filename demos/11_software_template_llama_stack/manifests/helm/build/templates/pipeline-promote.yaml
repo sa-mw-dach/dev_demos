@@ -1,0 +1,149 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: {{ .Values.app.name }}-promote
+  labels:
+    type: pipeline
+    backstage.io/kubernetes-id: {{ .Values.app.name }}
+spec:
+  params:
+    - name: git-repo-url
+      description: The git repository used in promotion
+    - name: git-revision
+      description: The revision to be promoted
+    - name: source-image
+      description: source image to promote
+      type: string
+      default: {{ include "image.dev-url" . }}
+    - name: destination-image
+      description: destination image to promote to
+      type: string
+      default: {{ include "image.preprod-url" . }}
+    - name: source-image-tag
+      type: string
+      default: latest
+    - name: destination-image-tag
+      type: string
+      default: latest
+    - name: namespace
+      type: string
+    - description: The hostname of the git instance
+      name: git-host
+      type: string
+    - description: The owner of the repo
+      name: git-owner
+      type: string
+    - description: The name of the component
+      name: component-id
+      type: string
+    - description: Common password used in demo
+      name: common-password-secret
+      type: string
+    - description: ArgoCD host
+      name: argocd-host
+      type: string
+    - name: policy-configuration
+      type: string
+    - name: rekor-host
+      type: string
+    - name: tuf_mirror
+      type: string
+  tasks:
+{{- if eq .Values.image.registry "Quay" }}
+    - name: verify-enterprise-contract
+      params:
+        - name: IMAGE
+          value: '$(params.source-image):$(params.source-image-tag)'
+        - name: COMPONENT_ID
+          value: {{ .Values.app.name }}
+        - name: REKOR_HOST
+          value: '$(params.rekor-host)'
+        - name: POLICY_CONFIGURATION
+          value: '$(params.policy-configuration)'
+        - name: TUF_MIRROR
+          value: '$(params.tuf_mirror)'
+        - name: CI_PROJECT_URL
+          value: '$(params.git-repo-url)'
+        - name: GIT_REVISION
+          value: '$(params.git-revision)'
+      taskRef:
+        kind: Task
+        name: verify-enterprise-contract
+    - name: quay-tag-promote
+      params:
+        - name: srcImageURL
+          value: 'docker://$(params.source-image):$(params.source-image-tag)'
+        - name: destImageURL
+          value: 'docker://$(params.source-image):$(params.destination-image-tag)'
+        - name: srcTLSverify
+          value: 'false'
+        - name: destTLSverify
+          value: 'false'
+      taskRef:
+        kind: ClusterTask
+        name: skopeo-copy
+      runAfter:
+        - verify-enterprise-contract
+      workspaces:
+        - name: images-url
+          workspace: images-url
+    - name: patch-deployment
+      params:
+        - name: namespace
+          value: $(params.namespace)
+        - name: git-host
+          value:  $(params.git-host)
+        - name: git-owner
+          value:  $(params.git-owner)
+        - name: component-id
+          value:  $(params.component-id)
+        - name: common-password-secret
+          value:  $(params.common-password-secret)
+        - name: image-tag
+          value: $(params.destination-image-tag)
+        - name: argocd-host
+          value:  $(params.argocd-host)
+      taskRef:
+        kind: Task
+        name: update-deployment
+      runAfter:
+        - quay-tag-promote
+{{- else }}
+    - name: copy-image-tag
+      params:
+        - name: srcImageURL
+          value: 'docker://$(params.source-image):$(params.source-image-tag)'
+        - name: destImageURL
+          value: 'docker://$(params.destination-image):$(params.destination-image-tag)'
+        - name: srcTLSverify
+          value: 'false'
+        - name: destTLSverify
+          value: 'false'
+      taskRef:
+        kind: ClusterTask
+        name: skopeo-copy
+      workspaces:
+        - name: images-url
+          workspace: images-url
+    - name: copy-image-latest
+      params:
+        - name: srcImageURL
+          value: 'docker://$(params.source-image):$(params.source-image-tag)'
+        - name: destImageURL
+          value: 'docker://$(params.destination-image):latest'
+        - name: srcTLSverify
+          value: 'false'
+        - name: destTLSverify
+          value: 'false'
+      taskRef:
+        kind: ClusterTask
+        name: skopeo-copy
+      runAfter:
+        - copy-image-tag
+      workspaces:
+        - name: images-url
+          workspace: images-url
+{{- end }}
+  workspaces:
+    - name: images-url

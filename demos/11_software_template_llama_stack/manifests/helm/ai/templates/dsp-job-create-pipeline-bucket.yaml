@@ -1,0 +1,59 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '1'
+  name: create-pipeline-bucket
+  namespace: {{ .Values.app.namespace }}
+spec:
+  manualSelector: false
+  backoffLimit: 4
+  completions: 1
+  template:
+    spec:
+      containers:
+        - name: create-bucket
+          image: 'quay.io/modh/odh-generic-data-science-notebook:v1-2023a-20231030-3e71410'
+          command:
+            - /bin/bash
+          args:
+            - '-ec'
+            - |-
+              # Install AWS CLI
+              pip install awscli
+
+              # Install MinIO Client (mc)
+              curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+              chmod +x mc
+
+              # Set up Bucket credentials
+              export MINIO_ACCESS_KEY_ID=$(oc get secret aws-connection-shared-minio---pipelines -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 --decode)
+              export MINIO_SECRET_ACCESS_KEY=$(oc get secret aws-connection-shared-minio---pipelines -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 --decode)
+              export MINIO_ROUTE=$(oc get secret aws-connection-shared-minio---pipelines -o jsonpath='{.data.AWS_S3_ENDPOINT}' | base64 --decode)
+
+              # Set MinIO alias with the new endpoint
+              ./mc alias set shared-minio "$MINIO_ROUTE" "$MINIO_ACCESS_KEY_ID" "$MINIO_SECRET_ACCESS_KEY"
+
+              # Check if the bucket exists
+              if ! ./mc ls shared-minio/{{ .Values.app.name }} >/dev/null 2>&1; then
+                  # Create bucket if it doesn't exist
+                  ./mc mb shared-minio/{{ .Values.app.name }}
+                  echo "Bucket '{{ .Values.app.name }}' created."
+              else
+                  echo "Bucket '{{ .Values.app.name }}' already exists."
+              fi
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: demo-setup
+      serviceAccount: demo-setup
+      securityContext: {}
+      schedulerName: default-scheduler
+  suspend: false
+  parallelism: 1
+  podReplacementPolicy: TerminatingOrFailed
+  completionMode: NonIndexed

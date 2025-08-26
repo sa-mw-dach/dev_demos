@@ -1,0 +1,168 @@
+schemaVersion: 2.2.0
+metadata:
+  generateName: ${{values.artifact_id}}
+components:
+  - name: development-tooling
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi8-8fca167
+      env:
+        - name: QUARKUS_HTTP_HOST
+          value: 0.0.0.0
+        - name: MAVEN_OPTS
+          value: "-Dmaven.repo.local=/home/user/.m2/repository"
+      memoryLimit: 5Gi
+      cpuLimit: 2500m
+      volumeMounts:
+        - name: m2
+          path: /home/user/.m2
+{%- if values.verify_commits == 'enabled' %}
+        - name: home
+          path: /projects/home
+{%- endif %}
+      endpoints:
+        - name: quarkus-dev
+          targetPort: 8080
+          exposure: public
+          secure: false
+          protocol: https
+          path: /
+        - name: debug
+          targetPort: 5005
+          exposure: none
+          secure: false
+          protocol: tcp
+        - name: tests
+          targetPort: 8081
+          exposure: none
+          secure: false
+          protocol: tcp
+  - name: m2
+    volume:
+      size: 1G
+{%- if values.verify_commits == 'enabled' %}
+  - name: home
+    volume:
+      size: 4Gi
+  - name: rhtas-cosign
+    container:
+      args:
+        - '-c'
+        - >-
+          mkdir -p /projects/home/bin && cp -vf /usr/local/bin/cosign-linux-amd64.gz /projects/home/bin/cosign.gz
+      command:
+        - /bin/bash
+      image: registry.redhat.io/rhtas/cosign-rhel9:1.0.0
+      sourceMapping: /projects
+      mountSources: true
+      memoryLimit: 256M
+      volumeMounts:
+      - name: home
+        path: /projects/home
+  - name: rhtas-gitsign
+    container:
+      args:
+        - '-c'
+        - >-
+          mkdir -p /projects/home/bin && cp -vf /usr/local/bin/gitsign_cli_linux_amd64.gz /projects/home/bin/gitsign.gz
+      command:
+        - /bin/bash
+      image: registry.redhat.io/rhtas/gitsign-rhel9:1.0.0
+      sourceMapping: /projects
+      mountSources: true
+      memoryLimit: 256M
+      volumeMounts:
+      - name: home
+        path: /projects/home
+  - name: rhtas-rekor
+    container:
+      args:
+        - '-c'
+        - >-
+          mkdir -p /projects/home/bin && cp -vf /usr/local/bin/rekor_cli_linux_amd64.gz /projects/home/bin/rekor-cli.gz
+      command:
+        - /bin/bash
+      image: registry.redhat.io/rhtas/rekor-cli-rhel9:1.0.0
+      sourceMapping: /projects
+      mountSources: true
+      memoryLimit: 256M
+      volumeMounts:
+      - name: home
+        path: /projects/home
+  - name: rhtas-clis-unzip
+    container:
+      args:
+        - '-c'
+        - >-
+          mkdir -p /projects/home/bin && ls -l /projects/home/bin && gunzip -c /projects/home/bin/cosign.gz > /projects/home/bin/cosign && chmod +x /projects/home/bin/cosign && rm -f /projects/home/bin/cosign.gz && gunzip -c /projects/home/bin/gitsign.gz > /projects/home/bin/gitsign && chmod +x /projects/home/bin/gitsign && rm -f /projects/home/bin/gitsign.gz && gunzip -c /projects/home/bin/rekor-cli.gz > /projects/home/bin/rekor-cli && chmod +x /projects/home/bin/rekor-cli && rm -f /projects/home/bin/rekor-cli.gz
+      command:
+        - /bin/bash
+      image: registry.access.redhat.com/ubi9/toolbox@sha256:47d4891b3e744f5622a31bd21a42dd51358c43bbfd44860cc05c7b29cc520e66
+      sourceMapping: /projects
+      mountSources: true
+      memoryLimit: 256M
+      volumeMounts:
+      - name: home
+        path: /projects/home
+{%- endif %}
+commands:
+  - id: package
+    exec:
+      label: "1. Package the application"
+      component: development-tooling
+      commandLine: "./mvnw package"
+      group:
+        kind: build
+        isDefault: true
+  - id: start-dev
+    exec:
+      label: "2. Start Development mode (Hot reload + debug)"
+      component: development-tooling
+      commandLine: "./mvnw compile quarkus:dev"
+      group:
+        kind: run
+        isDefault: true
+{%- if values.verify_commits == 'enabled' %}
+  - apply:
+      component: rhtas-cosign
+      label: Copy Cosign CLI
+    id: cp-cosign-clis
+  - apply:
+      component: rhtas-gitsign
+      label: Copy Gitsign CLI
+    id: cp-gitsign-clis
+  - apply:
+      component: rhtas-rekor
+      label: Copy Rekor CLI
+    id: cp-rekor-clis
+  - apply:
+      component: rhtas-clis-unzip
+      label: Unzip RHTAS CLIs
+    id: cp-rhtas-clis-unzip
+  - id: init-gitsign
+    exec:
+      label: "Initialize gitsign"
+      component: development-tooling
+      workingDir: /home/user
+      commandLine: |
+        git config --global user.email '${{values.owner}}@demo.redhat.com'
+        git config --global user.name '${{values.owner}}'
+        git config --global commit.gpgsign true
+        git config --global tag.gpgsign true
+        git config --global gpg.x509.program /projects/home/bin/gitsign
+        git config --global gpg.format x509
+        git config --global gitsign.fulcio https://fulcio-server-trusted-artifact-signer${{values.cluster}}
+        git config --global gitsign.issuer https://keycloak-rhsso${{values.cluster}}/auth/realms/openshift
+        git config --global gitsign.rekor https://rekor-server-trusted-artifact-signer${{values.cluster}}
+        git config --global gitsign.clientid trusted-artifact-signer
+      group:
+        kind: build
+        isDefault: true
+events:
+  preStart:
+    - cp-cosign-clis
+    - cp-gitsign-clis
+    - cp-rekor-clis
+    - cp-rhtas-clis-unzip
+  postStart:
+    - init-gitsign
+{%- endif %}

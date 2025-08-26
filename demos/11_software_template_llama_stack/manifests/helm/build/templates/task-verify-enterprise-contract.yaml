@@ -1,0 +1,246 @@
+# Copyright The Enterprise Contract Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: verify-enterprise-contract
+  annotations:
+    tekton.dev/displayName: Verify Enterprise Contract
+    tekton.dev/pipelines.minVersion: "0.19"
+    tekton.dev/tags: ec, chains, signature, conftest
+    task.results.format: application/json
+    task.results.type: ec
+    task.output.location: logs
+    task.results.container: step-report-json
+  labels:
+    app.kubernetes.io/version: "0.1"
+
+spec:
+  description: Verify the enterprise contract is met
+  params:
+    - name: IMAGE
+      type: string
+
+    - name: COMPONENT_ID
+      type: string
+
+    - name: POLICY_CONFIGURATION
+      type: string
+      description: |
+        Name of the policy configuration (EnterpriseContractPolicy
+        resource) to use. `namespace/name` or `name` syntax supported. If
+        namespace is omitted the namespace where the task runs is used.
+      default: "enterprise-contract-service/default"
+
+    - name: IGNORE_REKOR
+      type: string
+      description: >-
+        Skip Rekor transparency log checks during validation.
+      default: "false"
+
+    - name: TUF_MIRROR
+      type: string
+      description: TUF mirror URL. Provide a value when NOT using public sigstore deployment.
+      default: ""
+
+    - name: SSL_CERT_DIR
+      type: string
+      description: |
+        Path to a directory containing SSL certs to be used when communicating
+        with external services. This is useful when using the integrated registry
+        and a local instance of Rekor on a development cluster which may use
+        certificates issued by a not-commonly trusted root CA. In such cases,
+        "/var/run/secrets/kubernetes.io/serviceaccount" is a good value. Multiple
+        paths can be provided by using the ":" separator.
+      default: ""
+
+    - name: INFO
+      type: string
+      description: Include rule titles and descriptions in the output. Set to "false" to disable it.
+      default: "true"
+
+    - name: STRICT
+      type: string
+      description: Fail the task if policy fails. Set to "false" to disable it.
+      default: "true"
+
+    - name: HOMEDIR
+      type: string
+      description: Value for the HOME environment variable.
+      default: /tekton/home
+
+    - name: EFFECTIVE_TIME
+      type: string
+      description: Run policy checks with the provided time.
+      default: "now"
+
+    - name: REKOR_HOST
+      type: string
+      description: Rekor host for transparency log lookups
+      default: https://rekor.sigstore.dev
+
+    - name: CI_PROJECT_URL
+      type: string
+
+    - name: GIT_REVISION
+      type: string
+
+  workspaces:
+    - name: data
+      description: The workspace where the snapshot spec json file resides
+      optional: true
+
+  results:
+    - name: TEST_OUTPUT
+      description: Short summary of the policy evaluation for each image
+
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: $(params.COMPONENT_ID)-docker-config
+        items:
+        - key: .dockerconfigjson
+          path: config.json
+
+  stepTemplate:
+    env:
+      - name: HOME
+        value: "$(params.HOMEDIR)"
+
+  steps:
+    - script: |
+        cat <<EOF | tee /workspace/images.yaml
+        ---
+        components:
+          - containerImage: "$(params.IMAGE)"
+            source:
+              git:
+                url: "$(params.CI_PROJECT_URL)"
+                revision: "$(params.GIT_REVISION)"
+        EOF
+      image: 'ubi8/ubi-minimal'
+      name: create-images-yaml
+      resources: {}
+    - args:
+        - >-
+          oc get secret signing-secrets -n openshift-pipelines -o json > /workspace/signing-secrets
+      command:
+        - /bin/bash
+        - '-c'
+      image: 'quay.io/openshift/origin-cli:latest'
+      name: extract-signing-secret
+      resources: {}
+    - image: quay.io/redhat-gpte/jq
+      name: extract-cosign-public-key
+      resources: {}
+      script: |
+        set +x
+        cat /workspace/signing-secrets | jq -r '.data."cosign.pub"' | base64 --decode > /workspace/cosign.pub
+        cat /workspace/cosign.pub
+    - name: version
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [ec]
+      args:
+        - version
+    - name: initialize-tuf
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      script: |-
+        set -euo pipefail
+
+        if [[ -z "${TUF_MIRROR:-}" ]]; then
+            echo 'TUF_MIRROR not set. Skipping TUF root initialization.'
+            exit
+        fi
+
+        echo 'Initializing TUF root...'
+        cosign initialize --mirror "${TUF_MIRROR}" --root "${TUF_MIRROR}/root.json"
+        echo 'Done!'
+      env:
+        - name: TUF_MIRROR
+          value: "$(params.TUF_MIRROR)"
+    - name: validate
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [ec]
+      args:
+        - validate
+        - image
+        - "--verbose"
+        - "--images"
+        - "/workspace/images.yaml"
+        - "--policy"
+        - "$(params.POLICY_CONFIGURATION)"
+        - "--public-key"
+        - "/workspace/cosign.pub"
+        - "--rekor-url"
+        - "$(params.REKOR_HOST)"
+        - "--ignore-rekor=$(params.IGNORE_REKOR)"
+        # NOTE: The syntax below is required to negate boolean parameters
+        - "--info=$(params.INFO)"
+        - "--strict=false"
+        - "--show-successes"
+        - "--effective-time=$(params.EFFECTIVE_TIME)"
+        - "--output"
+        - "yaml=$(params.HOMEDIR)/report.yaml"
+        - "--output"
+        - "appstudio=$(results.TEST_OUTPUT.path)"
+        - "--output"
+        - "data=$(params.HOMEDIR)/data.yaml"
+        - "--output"
+        - "attestation=$(params.HOMEDIR)/attestations.jsonl"
+        - "--output"
+        - "json=$(params.HOMEDIR)/report-json.json"
+      volumeMounts:
+      - name: docker-config
+        mountPath: $(params.HOMEDIR)/.docker
+    - name: report
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/report.yaml"
+    - name: data
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/data.yaml"
+    - name: attestations
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/attestations.jsonl"
+    - name: report-json
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [cat]
+      args:
+        - "$(params.HOMEDIR)/report-json.json"
+    - name: summary
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [jq]
+      args:
+        - "."
+        - "$(results.TEST_OUTPUT.path)"
+    - name: assert
+      image: quay.io/enterprise-contract/ec-cli:362c6d6824695987bcdb7936c2efa35fd8ffb0e0
+      command: [jq]
+      args:
+        - "--argjson"
+        - "strict"
+        - "$(params.STRICT)"
+        - "-e"
+        - >
+          .result == "SUCCESS" or .result == "WARNING" or ($strict | not)
+        - "$(results.TEST_OUTPUT.path)"

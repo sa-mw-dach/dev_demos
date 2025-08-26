@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.app.name }}-sonarqube-setup-job
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  backoffLimit: 100
+  template:
+    spec:
+      containers:
+      - name: setup-sonarqube
+        command:
+          - /bin/bash
+          - '-c'
+          - |
+            set -x
+            ansible-playbook -i localhost /scripts/playbook.yaml -e sonarqube_url=$SONARQUBE_URL -e sonarqube_password=$COMMON_PASSWORD
+        image: quay.io/agnosticd/ee-multicloud:latest
+        volumeMounts:
+          - mountPath: /scripts
+            name: {{ .Values.app.name }}-script-vol
+        env:
+          - name: COMMON_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: common-password-secret
+          - name: SONARQUBE_URL
+            value: https://sonarqube-sonarqube{{ .Values.app.cluster }}
+      restartPolicy: Never
+      volumes:
+      - name: {{ .Values.app.name }}-script-vol
+        configMap:
+          name: {{ .Values.app.name }}-sonarqube-setup-script
+      serviceAccount: job-runner

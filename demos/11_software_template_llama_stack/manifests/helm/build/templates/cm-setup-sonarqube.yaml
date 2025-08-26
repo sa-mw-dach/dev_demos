@@ -1,0 +1,65 @@
+kind: ConfigMap
+metadata:
+  name:  {{ .Values.app.name }}-sonarqube-setup-script
+apiVersion: v1
+data:
+  playbook.yaml: |
+    - hosts: localhost
+      vars:
+        sonarqube_url: ''
+        sonarqube_password: ''
+      tasks:
+        - name: Does {{ .Values.app.name }} already exist in sonarqube?
+          uri:
+            url: "{{ "{{" }} sonarqube_url {{ "}}" }}/api/projects/search?projects={{ .Values.app.name }}"
+            user: admin
+            password: "{{ "{{" }} sonarqube_password {{ "}}" }}"
+            method: GET
+            body_format: json
+            headers:
+              Content-Type: application/json
+            force_basic_auth: true
+            validate_certs: false
+          register: _projects_list
+
+        - name: Create {{ .Values.app.name }} if necessary
+          when: _projects_list.json.components[0] is not defined
+          block:
+
+          - name: Create {{ .Values.app.name }} project
+            uri:
+              url: "{{ "{{" }} sonarqube_url {{ "}}" }}/api/projects/create?name={{ .Values.app.name }}&project={{ .Values.app.name }}"
+              user: admin
+              password: "{{ "{{" }} sonarqube_password {{ "}}" }}"
+              method: POST
+              body_format: json
+              headers:
+                Content-Type: application/json
+              force_basic_auth: true
+              validate_certs: false
+            register: result
+
+          - name: Create {{ .Values.app.name }} project token
+            uri:
+              url: "{{ "{{" }} sonarqube_url {{ "}}" }}/api/user_tokens/generate?name={{ .Values.app.name }}_token&type=PROJECT_ANALYSIS_TOKEN&projectKey={{ .Values.app.name }}"
+              user: admin
+              password: "{{ "{{" }} sonarqube_password {{ "}}" }}"
+              method: POST
+              headers:
+                Content-Type: application/json
+              force_basic_auth: true
+              validate_certs: false
+            register: r_uri
+
+          - name: Create sonarqube {{ .Values.app.name }} secret
+            kubernetes.core.k8s:
+              state: present
+              definition:
+                kind: Secret
+                apiVersion: v1
+                metadata:
+                  name: {{ .Values.app.name }}-sonarqube-secret
+                  namespace: {{ .Release.Namespace }}
+                stringData:
+                  token: '{{ "{{" }} r_uri.json.token {{ "}}" }}'
+                type: Opaque

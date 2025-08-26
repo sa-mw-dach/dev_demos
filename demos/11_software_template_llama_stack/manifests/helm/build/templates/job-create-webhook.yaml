@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.app.name }}-webhook-job
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  backoffLimit: 100
+  template:
+    spec:
+      containers:
+      - name: create-webhook
+        command:
+          - /bin/bash
+          - '-c'
+          - |
+            set -x
+            ansible-playbook -i localhost /scripts/playbook.yaml -e git_token=$(cat /tokens/token) -e webhook_secret=$(cat /secrets/secret)
+        image: quay.io/agnosticd/ee-multicloud:latest
+        volumeMounts:
+          - mountPath: /scripts
+            name: {{ .Values.app.name }}-script-vol
+          - mountPath: /tokens
+            name: git-token
+          - mountPath: /secrets
+            name: webhook-secret
+      restartPolicy: Never
+      volumes:
+      - name: {{ .Values.app.name }}-script-vol
+        configMap:
+          name: {{ .Values.app.name }}-webhook-script
+      - name: git-token
+        secret:
+          secretName: {{ .Values.app.name }}-git-token
+      - name: webhook-secret
+        secret:
+          secretName: {{ .Values.app.name }}-webhook-secret

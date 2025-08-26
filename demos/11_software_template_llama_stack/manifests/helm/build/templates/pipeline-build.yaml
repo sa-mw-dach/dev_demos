@@ -1,0 +1,262 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: {{ .Values.app.name }}-build
+  labels:
+    type: pipeline
+    backstage.io/kubernetes-id: {{ .Values.app.name }}
+spec:
+  params:
+    - name: source-repo
+      description: source repo that contains the application code
+      type: string
+      default: {{ .Values.git.repo }}
+    - name: source-branch
+      description: source branch to build from
+      default: {{ .Values.git.branch }}
+      type: string
+    - name: output-image
+      description: reference of the image that will get created
+      default: {{ include "image.dev-url" . }}
+      type: string
+    - name: sonarqube-host-url
+      type: string
+    - name: sonarqube-project-key
+      type: string
+    - name: sonarqube-project-secret
+      type: string
+    - name: cyclonedx-host-url
+      type: string
+    - name: stackrox-endpoint
+      type: string
+    - name: stackrox-secret
+      type: string
+    - name: git-host
+      type: string
+    - name: git-owner
+      type: string
+    - name: component-id
+      type: string
+    - name: common-password-secret
+      type: string
+    - name: rekor-url
+      type: string
+    - name: tuf-mirror
+      type: string
+    - name: certificate-identity
+      type: string
+    - name: oidc-issuer
+      type: string
+    - name: maven-image
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: $(params.source-repo)
+        - name: revision
+          value: $(params.source-branch)
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: source-folder
+{{- if eq .Values.git.verify_commits "enabled" }}
+    - name: verify-commit
+      params:
+      - name: certificate-identity
+        value: $(params.certificate-identity)
+      - name: oidc-issuer
+        value: $(params.oidc-issuer)
+      - name: rekor-url
+        value: $(params.rekor-url)
+      - name: tuf-mirror
+        value: $(params.tuf-mirror)
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        name: verify-commit
+      workspaces:
+        - name: repository
+          workspace: source-folder
+    - name: package
+      runAfter:
+        - verify-commit
+{{- else }}
+    - name: package
+      runAfter:
+        - git-clone
+{{- end }}
+      params:
+      - name: MAVEN_IMAGE
+        value: $(params.maven-image)
+      taskRef:
+        kind: ClusterTask
+        name: maven
+      workspaces:
+        - name: source
+          workspace: source-folder
+        - name: maven-settings
+          workspace: maven-settings
+    - name: scan-source
+      params:
+      - name: sonarqubeHostUrl
+        value: $(params.sonarqube-host-url)
+      - name: sonarqubeProjectKey
+        value: $(params.sonarqube-project-key)
+      - name: sonarqubeProjectSecret
+        value: $(params.sonarqube-project-secret)
+      runAfter:
+      - package
+      taskRef:
+        kind: Task
+        name: scan-code
+      workspaces:
+      - name: repository
+        workspace: source-folder
+    - name: build-sign-image
+      params:
+      - name: IMAGE
+        value: $(params.output-image)
+      runAfter:
+      - scan-source
+      taskRef:
+        kind: Task
+        name: buildah
+      workspaces:
+      - name: source
+        workspace: source-folder
+    - name: upload-sbom-to-tpa
+      runAfter:
+      - build-sign-image
+      taskRef:
+        kind: Task
+        name: upload-sbom-to-tpa
+      params:
+      - name: COMPONENT_ID
+        value: $(params.component-id)
+      workspaces:
+      - name: sboms
+        workspace: source-folder
+    - name: upload-sbom-to-cyclonedx-repo
+      params:
+      - name: cyclonedxHostUrl
+        value: $(params.cyclonedx-host-url)
+      - name: image
+        value: {{ include "sha-image.dev-url" . }}@$(tasks.build-sign-image.results.IMAGE_DIGEST)
+      runAfter:
+      - build-sign-image
+      taskRef:
+        kind: Task
+        name: upload-sbom-to-cyclonedx-repo
+      workspaces:
+      - name: repository
+        workspace: source-folder
+    - name: acs-image-check
+      params:
+      - name: rox_central_endpoint
+        value: $(params.stackrox-endpoint)
+      - name: rox_api_token
+        value: $(params.stackrox-secret)
+      - name: image
+        value: {{ include "sha-image.dev-url" . }}
+      - name: insecure-skip-tls-verify
+        value: "true"
+      - name: image_digest
+        value: $(tasks.build-sign-image.results.IMAGE_DIGEST)
+      runAfter:
+      - upload-sbom-to-tpa
+      - upload-sbom-to-cyclonedx-repo
+      taskRef:
+        kind: Task
+        name: acs-image-check
+      workspaces:
+      - name: reports
+        workspace: reports
+    - name: acs-image-scan
+      params:
+      - name: rox_central_endpoint
+        value: $(params.stackrox-endpoint)
+      - name: rox_api_token
+        value: $(params.stackrox-secret)
+      - name: image
+        value: {{ include "sha-image.dev-url" . }}
+      - name: insecure-skip-tls-verify
+        value: "true"
+      - name: image_digest
+        value: $(tasks.build-sign-image.results.IMAGE_DIGEST)
+      runAfter:
+      - upload-sbom-to-tpa
+      - upload-sbom-to-cyclonedx-repo
+      taskRef:
+        kind: Task
+        name: acs-image-scan
+      workspaces:
+      - name: reports
+        workspace: reports
+    - name: acs-deploy-check
+      params:
+      - name: rox_central_endpoint
+        value: $(params.stackrox-endpoint)
+      - name: rox_api_token
+        value: $(params.stackrox-secret)
+      - name: git_host
+        value: $(params.git-host)
+      - name: git_owner
+        value: $(params.git-owner)
+      - name: component_id
+        value: $(params.component-id)
+      - name: common_password_secret
+        value: $(params.common-password-secret)
+      - name: insecure-skip-tls-verify
+        value: "true"
+      taskRef:
+        kind: Task
+        name: acs-deploy-check
+      runAfter:
+      - upload-sbom-to-tpa
+      - upload-sbom-to-cyclonedx-repo
+      workspaces:
+      - name: reports
+        workspace: reports
+    - name: query-rekor-signed-provenance
+      params:
+      - name: imageDigest
+        value: $(tasks.build-sign-image.results.IMAGE_DIGEST)
+      - name: rekorUrl
+        value: $(params.rekor-url)
+      taskRef:
+        kind: Task
+        name: rekor-signed-provenance
+      runAfter:
+      - acs-image-check
+      - acs-image-scan
+      - acs-deploy-check
+    - name: resync
+      params:
+      - name: COMPONENT_ID
+        value: $(params.component-id)
+      runAfter:
+      - query-rekor-signed-provenance
+      taskRef:
+        kind: Task
+        name: resync
+  results:
+    - name: IMAGE_URL
+      value: "$(tasks.build-sign-image.results.IMAGE_URL)"
+    - name: IMAGE_DIGEST
+      value: "$(tasks.build-sign-image.results.IMAGE_DIGEST)"
+    - name: CHAINS-GIT_URL
+      value: "$(tasks.git-clone.results.url)"
+    - name: CHAINS-GIT_COMMIT
+      value: "$(tasks.git-clone.results.commit)"
+    - name: ACS_SCAN_OUTPUT
+      value: "$(tasks.acs-image-scan.results.SCAN_OUTPUT)"
+  workspaces:
+    - name: source-folder
+    - name: maven-settings
+    - name: docker-config
+    - name: reports

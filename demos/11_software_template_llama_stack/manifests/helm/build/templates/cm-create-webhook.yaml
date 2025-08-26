@@ -1,0 +1,47 @@
+kind: ConfigMap
+metadata:
+  name:  {{ .Values.app.name }}-webhook-script
+apiVersion: v1
+data:
+  playbook.yaml: |
+    - hosts: localhost
+      vars:
+        git_host: {{ .Values.git.host }}
+        git_project: {{ .Values.app.name }}
+        git_token: {{ .Values.git.token }}
+        webhook_url: https://webhook-{{ .Values.app.name }}{{ .Values.app.cluster }}
+        webhook_secret: {{ .Values.git.webhookSecret }}
+      tasks:
+        - name: Get gitlab projects
+          ansible.builtin.uri:
+            url: https://{{ "{{" }} git_host {{ "}}" }}/api/v4/projects
+            method: GET
+            body_format: form-urlencoded
+            headers:
+              PRIVATE-TOKEN: '{{ "{{" }} git_token {{ "}}" }}'
+            validate_certs: false
+            status_code: [200]
+          register: r_git_projects
+
+        - name: set gitlab projects id
+          set_fact:
+            git_project_id: '{{ "{{" }} r_git_projects.json | json_query(query) {{ "}}" }}'
+          vars:
+            query: {{ "\"" }}[?name=='{{ "{{" }} git_project {{ "}}" }}'].id{{ "\"" }}
+
+        - name: Create {{ "{{" }} git_project {{ "}}" }} web hook
+          ansible.builtin.uri:
+            url: https://{{ "{{" }} git_host {{ "}}" }}/api/v4/projects/{{ "{{" }} git_project_id[0] {{ "}}" }}/hooks
+            method: POST
+            body_format: form-urlencoded
+            body:
+              url: '{{ "{{" }} webhook_url {{ "}}" }}'
+              push_events: true
+              tag_push_events: true
+              releases_events: true
+              token: '{{ "{{" }} webhook_secret {{ "}}" }}'
+              enable_ssl_verification: false
+            headers:
+              PRIVATE-TOKEN: '{{ "{{" }} git_token {{ "}}" }}'
+            validate_certs: false
+            status_code: [201]

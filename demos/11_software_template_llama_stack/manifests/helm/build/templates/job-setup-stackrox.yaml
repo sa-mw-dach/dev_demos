@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.app.name }}-stackrox-setup-job
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  backoffLimit: 100
+  template:
+    spec:
+      containers:
+      - name: setup-stackrox
+        command:
+          - /bin/bash
+          - '-c'
+          - |
+            set -x
+            cd /scripts
+            ansible-playbook -i localhost playbook.yaml \
+            -e central_stackrox_url=$CENTRAL_STACKROX_URL \
+            -e central_stackrox_password=$COMMON_PASSWORD \
+            -e component_id={{ .Values.app.name }} \
+            -e apps_domain={{ .Values.app.cluster }}
+        image: quay.io/agnosticd/ee-multicloud:latest
+        volumeMounts:
+          - mountPath: /scripts
+            name: {{ .Values.app.name }}-script-vol
+        env:
+          - name: COMMON_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: common-password-secret
+          - name: CENTRAL_STACKROX_URL
+            value: https://central-stackrox{{ .Values.app.cluster }}
+
+      restartPolicy: Never
+      volumes:
+      - name: {{ .Values.app.name }}-script-vol
+        configMap:
+          name: {{ .Values.app.name }}-stackrox-setup-script
+      serviceAccount: job-runner

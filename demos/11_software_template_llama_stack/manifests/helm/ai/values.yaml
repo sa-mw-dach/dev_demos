@@ -1,0 +1,19 @@
+app:
+  name: ${{values.component_id}}
+  namespace: ${{values.component_id}}-ai
+  cluster: ${{values.cluster}}
+  user: ${{values.user}}
+  model:
+    endpoint: ${{values.model_endpoint}}
+    name: ${{values.model_name}}
+    api_key: ${{values.model_api_key}}
+  workbench:
+    name: 'my-workbench'
+    image: pytorch:2024.1
+  dashboard:
+    route: https://rhods-dashboard-redhat-ods-applications${{values.cluster}}
+
+git:
+  branch: master
+  repo: ${{values.source_repository}}
+  host: ${{ values.repository_host }}

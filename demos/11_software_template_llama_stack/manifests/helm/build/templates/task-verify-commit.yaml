@@ -1,0 +1,46 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: verify-commit
+spec:
+  params:
+  - description: TUF mirror
+    name: tuf-mirror
+    type: string
+    default: http://tuf.trusted-artifact-signer.svc
+  - description: Email address of committer
+    name: certificate-identity
+    type: string
+    default: user1@demo.redhat.com
+  - description: OIDC issuer
+    name: oidc-issuer
+    type: string
+    default: https://keycloak-rhsso.apps.cluster-v42rv.sandbox795.opentlc.com/auth/realms/sigstore
+  - description: Rekor URL
+    name: rekor-url
+    type: string
+    default: http://rekor-server.trusted-artifact-signer.svc
+  description: This task verifies the latest commit signature
+  stepTemplate:
+    env:
+      - name: GITSIGN_REKOR_URL
+        value: $(params.rekor-url)
+  steps:
+  - image: alpine/git:latest
+    name: git-verify
+    script: |
+      apk add rpm
+      wget "https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-linux-amd64"
+      mv cosign-linux-amd64 /usr/local/bin/cosign
+      chmod +x /usr/local/bin/cosign
+      rm -f gitsign_0.11.0_linux_amd64.rpm
+      wget -q https://github.com/sigstore/gitsign/releases/download/v0.11.0/gitsign_0.11.0_linux_amd64.rpm
+      rpm -ivh gitsign_0.11.0_linux_amd64.rpm
+      git config --global --add safe.directory /workspace/repository
+      cosign initialize --mirror=$(params.tuf-mirror) --root=$(params.tuf-mirror)/root.json
+      git show -s
+      gitsign verify --certificate-identity=$(params.certificate-identity) --certificate-oidc-issuer=$(params.oidc-issuer) HEAD \
+      || (echo "Unable to verify commit signature!  Please ensure that the RHEL9 VM was used for source code commits or you have configured GitSign on your development machine correctly." && exit 1)
+    workingDir: /workspace/repository
+  workspaces:
+  - name: repository

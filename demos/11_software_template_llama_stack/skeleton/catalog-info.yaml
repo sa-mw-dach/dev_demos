@@ -1,0 +1,51 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{values.component_id | dump}}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  annotations:
+    argocd/app-selector: rht-gitops.com/janus-argocd=${{values.component_id}}-bootstrap
+    backstage.io/kubernetes-id: ${{values.component_id}}
+    janus-idp.io/tekton: ${{values.component_id}}
+    backstage.io/source-location: url:https://${{values.host}}/${{values.destination}}
+    backstage.io/techdocs-ref: url:https://${{values.host}}/${{values.destination}}
+    gitlab.com/project-slug: ${{values.destination}}
+    quay.io/repository-slug: ${{values.quay_destination | dump}}
+  tags:
+    - java
+    - quarkus
+  links:
+    - url: https://devspaces${{values.cluster}}/#https://${{values.host}}/${{values.destination}}
+      title: OpenShift Dev Spaces (VS Code)
+      icon: web
+    - url: https://devspaces${{values.cluster}}/#https://${{values.host}}/${{values.destination}}?che-editor=che-incubator/che-idea/latest
+      title: OpenShift Dev Spaces (JetBrains IntelliJ)
+      icon: web
+    - url: https://rhods-dashboard-redhat-ods-applications${{values.cluster}}/projects/${{values.component_id}}-ai?section=overview
+      title: RHOAI Data Science Project
+      icon: web
+    - url: https://my-workbench-${{values.component_id}}-ai${{values.cluster}}/notebook/${{values.component_id}}-ai/my-workbench
+      title: Workbench Notebook
+      icon: web
+spec:
+  type: service
+  lifecycle: production
+  owner: ${{values.owner | dump}}
+  providesApis:
+    - ${{values.component_id | dump}}
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ${{values.component_id | dump}}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+spec:
+  type: openapi
+  lifecycle: production
+  owner: ${{values.owner | dump}}
+  definition:
+    $text: ./openapi.yaml

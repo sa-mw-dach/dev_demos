@@ -1,0 +1,33 @@
+---
+openapi: 3.0.3
+info:
+  title: langchain4j-demo API
+  version: 1.0.0-SNAPSHOT
+servers:
+- url: http://localhost:8080
+  description: Auto generated value
+- url: http://0.0.0.0:8080
+  description: Auto generated value
+paths:
+  /_importmap/dynamic-importmap.js:
+    get:
+      tags:
+      - Importmap Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/javascript:
+              schema:
+                type: string
+  /_importmap/dynamic.importmap:
+    get:
+      tags:
+      - Importmap Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/importmap+json:
+              schema:
+                type: string

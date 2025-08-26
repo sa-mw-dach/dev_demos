@@ -1,0 +1,74 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: {{ .Values.app.name }}-run-promote
+spec:
+  params:
+    - name: git-repo-url
+      description: Repository where the event was triggered
+    - name: git-revision
+      description: Revision of the change
+    - name: source-image
+      description: The source image to promote
+      default: {{ include "image.dev-url" . }}
+    - name: destination-image
+      description: The destination to copy the image to
+      default: {{ include "image.preprod-url" . }}
+    - name: source-tag
+      description: The image tag to promote
+    - name: destination-tag
+      description: The git tag representing the new version or release
+    - name: namespace
+      description: The target namespace being deployed to
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: {{ .Values.app.name }}-run-promote-
+        labels:
+          backstage.io/kubernetes-id: {{ .Values.app.name }}
+      spec:
+{{- if eq .Values.image.registry "Quay" }}
+        taskRunSpecs:
+        - pipelineTaskName: verify-enterprise-contract
+          taskServiceAccountName: job-runner
+{{- end }}
+        params:
+          - name: git-repo-url
+            value: $(tt.params.git-repo-url)
+          - name: git-revision
+            value: $(tt.params.git-revision)
+          - name: source-image
+            value: $(tt.params.source-image)
+          - name: destination-image
+            value: $(tt.params.destination-image)
+          - name: source-image-tag
+            value: $(tt.params.source-tag)
+          - name: destination-image-tag
+            value: $(tt.params.destination-tag)
+          - name: namespace
+            value: $(tt.params.namespace)
+          - name: git-host
+            value: gitlab-gitlab{{ .Values.app.cluster }}
+          - name: git-owner
+            value: {{ .Values.git.org }}
+          - name: component-id
+            value: {{ .Values.app.name }}
+          - name: common-password-secret
+            value: common-password-secret
+          - name: argocd-host
+            value: argocd-server-janus-argocd{{ .Values.app.cluster }}
+          - name: policy-configuration
+            value: 'git::github.com/redhat-gpe/config//default'
+          - name: rekor-host
+            value: http://rekor-server.trusted-artifact-signer.svc
+          - name: tuf_mirror
+            value: http://tuf.trusted-artifact-signer.svc
+        pipelineRef:
+          name: {{ .Values.app.name }}-promote
+        serviceAccountName: image-pusher
+        timeout: 1h0m0s
+        workspaces:
+          - name: images-url
+            emptyDir: {}

@@ -1,0 +1,33 @@
+{{- if ne .Values.git.verify_commits "enabled" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.app.name }}-pipeline-run-job
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  selector: {}
+  template:
+    metadata:
+      name: {{ .Values.app.name }}-pipeline-run-job
+    spec:
+      containers:
+        - name: {{ .Values.app.name }}-pipeline-run-job
+          image: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+          args:
+            - '-ec'
+            - >-
+              oc create -f /scripts/trigger-pipeline.yaml
+          volumeMounts:
+          - mountPath: /scripts
+            name: {{ .Values.app.name }}-script-vol
+      restartPolicy: OnFailure
+      serviceAccountName: pipeline
+      volumes:
+      - name: {{ .Values.app.name }}-script-vol
+        configMap:
+          name: {{ .Values.app.name }}-trigger-pipeline
+{{- end }}

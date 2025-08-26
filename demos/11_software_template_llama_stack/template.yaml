@@ -1,0 +1,228 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: chatbot-external-llm-template
+  title: Chatbot with external Large Language Model (LLM)
+  description: Creates a secured quarkus application chatbot with configuration to access an external LLM.
+  tags:
+    - recommended
+    - java
+    - quarkus
+    - maven
+    - ai
+    - rhoai
+    - rhtap
+spec:
+  owner: rhdh
+  type: service
+  parameters:
+    - title: Provide Information for Application
+      required:
+        - component_id
+        - java_package_name
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          default: chatbot-app
+          ui:field: EntityNamePicker
+          maxLength: 12
+        group_id:
+          title: Group Id
+          type: string
+          default: redhat.janus
+          description: Maven Group Id
+        artifact_id:
+          title: Artifact Id
+          type: string
+          default: chatbot-app
+          description: Maven Artifact Id
+        java_package_name:
+          title: Java Package Name
+          default: org.redhat.janus
+          type: string
+          description: Name for the java package. eg (com.redhat.blah)
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this website is for.
+          default: A cool quarkus chatbot app
+    - title: Large Language Model
+      required:
+        - model_endpoint
+        - model_name
+      properties:
+        model_endpoint:
+          title: Model Endpoint
+          type: string
+          description: A publicly accessible model endpoint
+          pattern: '^(http|https)://.*[^/]$'
+        model_name:
+          title: Model Name
+          type: string
+          description: The name of the model
+        model_api_key:
+          title: API Key
+          type: string
+          description: The API key for accessing the model endpoint
+    - title: Provide Image Registry Information
+      required:
+        - image_registry
+      properties:
+        image_registry:
+          title: Image Registry
+          type: string
+          default: Quay
+          enum:
+            - Quay
+      dependencies:
+        image_registry:
+          oneOf:
+            - properties:
+                image_registry:
+                  enum:
+                    - Quay
+                image_host:
+                  title: Image Host
+                  type: string
+                  description: Host for storing image
+                  default: {{ quay_host }}
+                image_organization:
+                  title: Organization
+                  type: string
+                  description: Name of the Quay Organization
+                  default: quayadmin
+                image_tag:
+                  title: Image Tag
+                  default: latest
+                  type: string
+                  description: Build Image tag
+    - title: Application repository Information
+      required:
+        - repo
+      properties:
+        repo:
+          title: Repository Location
+          type: object
+          properties:
+            host:
+              title: Repo Host
+              type: string
+              description: Your SCM host
+              default: {{ gitlab_host }}
+              enum:
+                - {{ gitlab_host }}
+            owner:
+              title: Repo Owner
+              type: string
+              description: Your SCM host organization/group
+              default: {{ gitlab_destination_group }}
+              enum:
+                - {{ gitlab_destination_group }}
+            verify_commits:
+              title: Verify Commits
+              type: string
+              description: Verify Git repository commits using Red Hat’s Trusted Artifact Signer (TAS) service
+              default: disabled
+              enum:
+                - enabled
+                - disabled
+
+  steps:
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        copyWithoutTemplating:
+          - .github/workflows/*
+        values:
+          component_id: {{ '${{ parameters.component_id }}' }}
+          description: {{ '${{ parameters.description }}' }}
+          namespace: {{ '${{ parameters.component_id }}' }}-dev
+          group_id: {{ '${{ parameters.group_id }}' }}
+          artifact_id: {{ '${{ parameters.artifact_id }}' }}
+          java_package_name: {{ '${{ parameters.java_package_name }}' }}
+          owner: {{ '${{ user.entity.metadata.name }}' }}
+          cluster: {{ cluster_subdomain }}
+          host: {{ '${{ parameters.repo.host }}' }}
+          destination: {{ '${{ parameters.repo.owner }}' }}/{{ '${{ parameters.component_id }}' }}
+          quay_destination: {{ '${{ parameters.image_organization}}' }}/{{ '${{ parameters.component_id }}' }}
+          port: 8080
+          verify_commits: {{ '${{ parameters.repo.verify_commits }}' }}
+          model_endpoint: {{ '${{ parameters.model_endpoint }}' }}
+          model_name: {{ '${{ parameters.model_name }}' }}
+          model_api_key: {{ '${{ parameters.model_api_key | default ("NOT_SET") }}' }}
+
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: "{{ '${{ parameters.repo.host }}' }}?owner={{ '${{ parameters.repo.owner }}' }}&repo={{ '${{parameters.component_id}}' }}"
+        repoVisibility: public
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: {{ '${{ steps.publish.output.repoContentsUrl }}' }}
+        catalogInfoPath: "/catalog-info.yaml"
+
+    - id: template-gitops-deployment
+      name: Generating Deployment Resources
+      action: fetch:template
+      input:
+        url: ./manifests
+        copyWithoutTemplating: []
+        values:
+          component_id: {{ '${{ parameters.component_id }}' }}
+          description: {{ '${{ parameters.description }}' }}
+          destination: https://{{ '${{ parameters.repo.host }}' }}/{{ '${{ parameters.repo.owner }}' }}/{{ '${{parameters.component_id}}' }}-gitops.git
+          source_repository: https://{{ '${{ parameters.repo.host }}' }}/{{ '${{ parameters.repo.owner }}' }}/{{ '${{parameters.component_id}}' }}.git
+          repository_name: {{ '${{parameters.component_id}}' }}
+          git_owner: {{ '${{ parameters.repo.owner }}' }}
+          cluster: {{ cluster_subdomain }}
+          namespace: {{ '${{ parameters.component_id }}' }}-dev
+          image_registry: {{ '${{ parameters.image_registry }}' }}
+          image_host: {{ '${{ parameters.image_host }}' }}
+          image_organization: {{ '${{ parameters.image_organization }}' }}
+          image_name: {{ '${{ parameters.component_id }}' }}
+          image_tag: {{ '${{ parameters.image_tag }}' }}
+          port: 8080
+          repository_host: {{ '${{ parameters.repo.host }}' }}
+          deployment_name: quarkus-template
+          user: {{ '${{ user.entity.metadata.name }}' }}
+          verify_commits: {{ '${{ parameters.repo.verify_commits }}' }}
+          model_endpoint: {{ '${{ parameters.model_endpoint }}' }}
+          model_name: {{ '${{ parameters.model_name }}' }}
+          model_api_key: {{ '${{ parameters.model_api_key | default("NOT_SET") }}' }}
+        targetPath: ./tenant-gitops
+
+    - id: publish-gitops
+      name: Publishing to Resource Repository
+      action: publish:gitlab
+      input:
+        repoUrl: "{{ '${{ parameters.repo.host }}' }}?owner={{ '${{ parameters.repo.owner }}' }}&repo={{ '${{parameters.component_id}}' }}-gitops"
+        title: gitops resources for {{ '${{ parameters.component_id }}' }}
+        description: gitops resources for {{ '${{ parameters.component_id }}' }}
+        sourcePath: ./tenant-gitops
+        repoVisibility: public
+
+    - id: create-argocd-resources
+      name: Create ArgoCD Resources
+      action: argocd:create-resources
+      input:
+        appName: {{ '${{ parameters.component_id }}' }}-bootstrap
+        argoInstance: main
+        namespace: janus-argocd
+        repoUrl: https://{{ '${{ parameters.repo.host }}' }}/{{ '${{ parameters.repo.owner }}' }}/{{ '${{ parameters.component_id }}' }}-gitops.git
+        path: 'argocd/'
+
+  output:
+    links:
+      - title: Source Code Repository
+        url: {{ '${{ steps.publish.output.remoteUrl }}' }}
+      - title: Open Component in catalog
+        icon: catalog
+        entityRef: {{ '${{ steps.register.output.entityRef }}' }}

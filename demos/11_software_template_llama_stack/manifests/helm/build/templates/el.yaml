@@ -1,0 +1,60 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: {{ .Values.app.name }}-el
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: commit-binding
+      interceptors:
+        - params:
+          - name: secretRef
+            value:
+              secretKey: secret
+              secretName: {{ .Values.app.name }}-webhook-secret
+          ref:
+            name: gitlab
+        - params:
+            - name: filter
+              value: has(body.commits) && body.object_kind == 'push' && body.ref == 'refs/heads/{{ .Values.git.branch }}'
+            - name: overlays
+              value: null
+          ref:
+            kind: ClusterInterceptor
+            name: cel
+      name: commit-trig
+      template:
+        ref: {{ .Values.app.name }}-run-build
+    - bindings:
+        - kind: TriggerBinding
+          ref: tag-binding-preprod
+      interceptors:
+        - params:
+            - name: filter
+              value: body.object_kind == 'tag_push'
+            - name: overlays
+              value:
+                - expression: 'body.ref.split(''/'')[2]'
+                  key: tag_version
+          ref:
+            kind: ClusterInterceptor
+            name: cel
+      name: tag-trig-preprod
+      template:
+        ref: {{ .Values.app.name }}-run-promote
+    - bindings:
+        - kind: TriggerBinding
+          ref: tag-binding-prod
+      interceptors:
+        - params:
+            - name: filter
+              value: body.object_kind == 'release'
+          ref:
+            kind: ClusterInterceptor
+            name: cel
+      name: tag-trig-prod
+      template:
+        ref: {{ .Values.app.name }}-run-promote
