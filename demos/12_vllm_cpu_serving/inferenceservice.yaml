@@ -1,0 +1,35 @@
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: tinyllama-1b-cpu
+    serving.kserve.io/deploymentMode: RawDeployment
+  name: tinyllama-1b-cpu
+  labels:
+    opendatahub.io/dashboard: 'true'
+    networking.knative.dev/visibility: cluster-local
+spec:
+  predictor:
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      args:
+        - '--model'
+        - '/mnt/models'
+        - '--max-model-len'
+        - '2048'
+        - '--served-model-name'
+        - 'tinyllama'
+      modelFormat:
+        name: vLLM
+      name: ''
+      resources:
+        limits:
+          cpu: '8'
+          memory: '8Gi'
+        requests:
+          cpu: '2'
+          memory: '4'
+      runtime: vllm-cpu
+      storageUri: 'oci://quay.io/rh-aiservices-bu/tinyllama:1.0'
